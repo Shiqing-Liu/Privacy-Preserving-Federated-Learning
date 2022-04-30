@@ -17,7 +17,7 @@ FedOpt [Adaptive Federated Optimization](https://arxiv.org/abs/2003.00295)
 
 [Ternary Compression for Communication-Efficient Federated Learning](https://ieeexplore.ieee.org/document/9288933)
 
-[Communication-efficient federated learning](https://www.pnas.org/doi/10.1073/pnas.2024789118)
+[Communication-efficient federated learning](https://www.pnas.org/doi/10.1073/pnas.2024789118).  
 [HCFL: A High Compression Approach for Communication-Efficient Federated Learning in Very Large Scale IoT Networks](https://arxiv.org/abs/2204.06760)
 
 ## non-IID distribution
