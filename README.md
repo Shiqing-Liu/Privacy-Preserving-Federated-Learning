@@ -23,6 +23,10 @@ FedOpt [Adaptive Federated Optimization](https://arxiv.org/abs/2003.00295)
 ## non-IID distribution
 
 [Federated Learning on Non-IID Data: A Survey](https://arxiv.org/abs/2106.06843)
+[Federated Learning with Personalization Layers] (https://arxiv.org/abs/1912.00818)
+[Personalized Federated Learning Code on Flickr and Cifar] (https://drive.google.com/drive/folders/1wj-LiWYrpSG2dFhaz5wJ8T4ItIpxhN2l)
+
+
 
 ## useful links
 
