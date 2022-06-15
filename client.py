@@ -97,6 +97,8 @@ class Client(Thread):
         self.logger.debug(f"Start training...")
 
         self.model.train()
+        
+
         optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
         for epoch in range(self.epochs):
             self.logger.debug(f"Epoch {epoch+1}/{self.epochs}...")

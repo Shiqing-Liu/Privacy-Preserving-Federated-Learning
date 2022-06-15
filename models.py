@@ -1,6 +1,80 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from collections import OrderedDict
+
+class Net_3(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fp_conv1 = nn.Sequential(OrderedDict([
+            ("conv0", nn.Conv2d(
+                in_channels=1,
+                out_channels=16,
+                kernel_size=5,
+                stride=1,
+                padding=2,
+                bias = False
+            )),
+            ("relu0", nn.ReLU(inplace=True)),
+            ("pool0", nn.MaxPool2d(kernel_size=2))
+        ]))
+        self.ternary_con2 = nn.Sequential(OrderedDict([
+            ("conv1",nn.Conv2d(16, 32, 5, 1, 2, bias=False)),
+            ("norm1", nn.BatchNorm2d(32)),
+            ("relu1", nn.ReLU(inplace=True)),
+            ("pool1", nn.MaxPool2d(2)),
+
+            ('conv2', nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1, bias=False)),
+            ('norm2', nn.BatchNorm2d(64)),
+            ('relu2', nn.ReLU(inplace=True)),
+            ('conv3', nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1, bias=False)),
+            ('norm3', nn.BatchNorm2d(128)),
+            ('relu3', nn.ReLU(inplace=True)),
+            ('pool2', nn.MaxPool2d(kernel_size=2, stride=2)),
+        ]))
+
+        # fully connected layer, output 10 classes
+        self.fp_fc = nn.Linear(1152, 10)
+    def forward(self, x):
+        x = self.fp_conv1(x)
+        x = self.ternary_con2(x)
+        # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
+        x = x.view(x.size(0), -1)
+        output = self.fp_fc(x)
+        return output
+
+
+def Quantized_CNN(pre_model, conf):
+    """
+    quantize the moderated cnn model
+    :param pre_model:
+    :param args:
+    :return:
+    """
+
+    #full-precision first and last layer
+    weights = [p for n, p in pre_model.named_parameters() if 'fp' in n and 'weight' in n]
+    biases = [p for n, p in pre_model.named_parameters() if 'fp' in n and 'bias' in n]
+
+    #layers that need to be quantized
+    ternary_weights = [p for n, p in pre_model.named_parameters() if 'ternary' in n and 'conv' in n]
+
+    #weights and biases of batch normlization layer
+    bn_weights = [p for n, p in pre_model.named_parameters() if 'norm' in n and 'weight' in n]
+    bn_biases = [p for n, p in pre_model.named_parameters() if 'norm' in n and 'bias' in n]
+
+    params = [
+        {'params': weights},
+        {'params': ternary_weights},
+        {'params': biases},
+
+        {'params': bn_weights},
+        {'params': bn_biases}
+    ]
+    torch.optim.Adam(params, conf["lr"])
+
+    return pre_model
+
 
 
 class Net_1(nn.Module):

@@ -40,6 +40,9 @@ class Server(Thread):
         self.clients_data_len = []
         self.clients_names = []
 
+        self.received_data = []
+        self.send_data = []
+
         self.losses = []
         self.accs = []
 
@@ -131,6 +134,59 @@ class Server(Thread):
 
         self.model.load_state_dict(averaged_dict)
 
+    def average_model_quant(self, client_models, coefficients):
+
+        # number of clients participatiuon
+        num_model = len(client_models)
+        # weight the weights by client contribution for strategy 2
+        w_avg = client_models[0]
+        for key, value in w_avg.items():
+            for i in range(0, num_model):
+                if i == 0:
+                    w_avg[key] = coefficients[0] * client_models[0][key]
+                else:
+                    w_avg[key] += coefficients[i] * client_models[i][key]
+        # copy and quantizise for strategy 1
+        backup_w = copy.deepcopy(w_avg)
+
+        ter_avg = self.quantize_server(backup_w)
+        w,_ = self.choose_model(w_avg,ter_avg)
+        self.model.load_state_dict(w)
+
+    def quantize_server(self, model_dict):
+        for key, kernel in model_dict.items():
+            if 'ternary' and 'conv' in key:
+                d2 = kernel.size(0) * kernel.size(1)
+                delta = 0.05 * kernel.abs().sum() / d2
+                tmp1 = (kernel.abs() > delta).sum()
+                tmp2 = ((kernel.abs() > delta) * kernel.abs()).sum()
+                w_p = tmp2 / tmp1
+                a = (kernel > delta).float()
+                b = (kernel < -delta).float()
+                kernel = w_p * a - w_p * b
+                model_dict[key] = kernel
+        return model_dict
+
+    def choose_model(self, f_dict, ter_dict):
+        # create models based on both full and ternary weights
+        tmp_net1 = copy.deepcopy(self.model)
+        tmp_net2 = copy.deepcopy(self.model)
+        tmp_net1.load_state_dict(f_dict)
+        tmp_net2.load_state_dict(ter_dict)
+        # evaluate networks on test set
+        _, acc_1 = self.evaluate(tmp_net1)
+        _, acc_2 = self.evaluate(tmp_net2)
+        print('F: %.3f' % acc_1, 'TF: %.3f' % acc_2)
+        # If the ter model loses more than 3 percent accuracy, sent full model instead
+        flag = False
+        if np.abs(acc_1 - acc_2) < 0.03:
+            self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 1")
+            flag = True
+            return ter_dict, flag
+        else:
+            self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 2")
+            return f_dict, flag
+
     def train(self):
         """
         One round of training. Consisting of choosing the fraction of clients involved in this round, updating the
@@ -158,7 +214,7 @@ class Server(Thread):
 
         coefficients = [size/sum(self.clients_data_len) for size in self.clients_data_len]
 
-        self.average_model(client_models, coefficients)
+        self.average_model_quant(client_models, coefficients)
 
     def fit(self):
         """
@@ -179,20 +235,22 @@ class Server(Thread):
 
         self.logger.info("Finished training!")
 
-    def evaluate(self):
+    def evaluate(self, eval_model = None):
         """
         Evaluate the current global model with the specified test data.
 
         :return: loss: loss of the model given its data
         :return: acc : accuracy of the model given its data
         """
-        self.model.eval()
-
+        if eval_model is None:
+            eval_model = self.model
+        eval_model.eval()
         loss = 0
         acc = 0
         with torch.no_grad():
             for x, y in self.test_dataloader:
-                outputs = self.model(x)
+
+                outputs = eval_model(x)
                 loss += self.criterion(outputs, y).item()
                 preds = outputs.argmax(dim=1, keepdim=True)
                 acc += (preds == y.view_as(preds)).sum().item()
