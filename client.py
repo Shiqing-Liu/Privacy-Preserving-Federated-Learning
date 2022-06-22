@@ -3,6 +3,8 @@ from collections import Counter
 import pickle
 import struct
 from socket import socket, AF_INET, SOCK_STREAM
+import matplotlib.pyplot as plt
+import numpy as np
 
 from config import SERVER_HOST, SERVER_PORT
 from utils import get_data_by_indices
@@ -14,6 +16,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M:%S',
                     )
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 class Client(Thread):
     def __init__(self, name, host, port):
@@ -22,6 +25,9 @@ class Client(Thread):
         self.logger = self.setup_logger(self.name)
         self.host = host
         self.port = port
+
+        self.accs = []
+        self.losses = []
 
     def run(self):
         '''
@@ -54,7 +60,7 @@ class Client(Thread):
         while True:
             signal = self.receive()
             if not signal:
-                self.logger.warning("No data received: Exiting")
+                self.logger.info("No data received: Exiting")
                 break
             self.logger.info(f"{self.name} <--{signal}-- Server")
             if signal == "Update":
@@ -71,6 +77,16 @@ class Client(Thread):
                 model = self.receive()
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Complete model-- Server")
+
+        # Plot performance
+        fig, ax = plt.subplots()
+        ax.plot(self.accs)
+        ax.plot(self.losses)
+        ax.set_xticklabels(np.arange(1, self.epochs + 1, dtype="int32").tolist() * int(len(self.accs)/self.epochs))
+        ax.set_xticks(np.arange(0, len(self.accs)))
+        ax.grid()
+        ax.legend(["Accuracy", "Loss"])
+        fig.savefig("latest_performance_" + self.name + ".png")
 
 
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion):
@@ -108,6 +124,8 @@ class Client(Thread):
                 loss.backward()
                 optimizer.step()
             loss, acc = self.evaluate()
+            self.losses.append(loss)
+            self.accs.append(acc)
             self.logger.info(f"Epoch {epoch+1}/{self.epochs} completed: loss: {loss}, accuracy: {acc}.")
         self.logger.info("Finished training!")
 

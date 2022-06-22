@@ -1,6 +1,7 @@
 import torch
 import copy
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import OrderedDict
 import pickle
 import struct
@@ -17,6 +18,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M:%S')
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 class Server(Thread):
     def __init__(self, model, fed_config, host, port):
@@ -65,6 +67,16 @@ class Server(Thread):
         # End
         self.disconnect_clients()
         self.logger.info("Exiting.")
+
+        # Plot performance
+        fig, ax = plt.subplots()
+        ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs)
+        ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.losses)
+        ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        ax.grid()
+        ax.legend(["Accuracy", "Loss"])
+        fig.savefig("latest_performance_server.png")
+
 
     def connect_clients(self):
         '''
