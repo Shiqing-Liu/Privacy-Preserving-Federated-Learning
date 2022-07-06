@@ -11,6 +11,7 @@ from config import SERVER_HOST, SERVER_PORT
 def main():
     classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
+
     fed_config = {"C": 0.2,
                   "K": 3,
                   "R": 5,
@@ -21,9 +22,12 @@ def main():
                   "lr": 0.01,
                   "data_name": "MNIST",
                   "iid": False,
-                  "shards_each": 2}
-
-    model = Net_2()
+                  "shards_each": 2,
+                  "ternary" : True}
+    if fed_config["ternary"]:
+        model = Quantized_CNN(Net_3(), fed_config)
+    else:
+        model = Net_2
 
     server = Server(model, fed_config, SERVER_HOST, SERVER_PORT)
     clients = []
