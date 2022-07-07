@@ -3,7 +3,7 @@ import torchvision
 import numpy as np
 from torchvision import transforms
 
-LESS_DATA = 5000 # Int, >0 if less data should be used, otherwise 0
+LESS_DATA = 500 # Int, >0 if less data should be used, otherwise 0
 
 def get_data_by_indices(name, train, indices):
     '''
