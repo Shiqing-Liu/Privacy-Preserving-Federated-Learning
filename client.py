@@ -2,6 +2,7 @@ import torch
 from collections import Counter
 import pickle
 import struct
+import copy
 from socket import socket, AF_INET, SOCK_STREAM
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +26,9 @@ class Client(Thread):
         self.logger = self.setup_logger(self.name)
         self.host = host
         self.port = port
-
+        self.send_data = []
+        self.received_data = []
+        self.ternary = True
         self.accs = []
         self.losses = []
 
@@ -77,7 +80,7 @@ class Client(Thread):
                 model = self.receive()
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Complete model-- Server")
-
+        self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
         # Plot performance
         fig, ax = plt.subplots()
         ax.plot(self.accs)
@@ -125,19 +128,64 @@ class Client(Thread):
                 loss = self.criterion(outputs, y)
                 loss.backward()
                 optimizer.step()
+
+
             loss, acc = self.evaluate()
             self.losses.append(loss)
             self.accs.append(acc)
             self.logger.info(f"Epoch {epoch+1}/{self.epochs} completed: loss: {loss}, accuracy: {acc}.")
+        if self.ternary:
+            backup_w = copy.deepcopy(self.model.state_dict())
+            ter_avg = self.quantize_client(backup_w)
+            w, _ = self.choose_model(self.model.state_dict().items(), ter_avg)
+            self.model.load_state_dict(w)
         self.logger.info("Finished training!")
 
-    def evaluate(self):
+    def quantize_client(self, model_dict):
+        for key, kernel in model_dict.items():
+            if 'ternary' and 'conv' in key:
+                d2 = kernel.size(0) * kernel.size(1)
+                delta = 0.05 * kernel.abs().sum() / d2
+                tmp1 = (kernel.abs() > delta).sum()
+                tmp2 = ((kernel.abs() > delta) * kernel.abs()).sum()
+                w_p = tmp2 / tmp1
+                a = (kernel > delta).float()
+                b = (kernel < -delta).float()
+                kernel = w_p * a - w_p * b
+                model_dict[key] = kernel
+        return model_dict
+
+    def choose_model(self, f_dict, ter_dict):
+        # create models based on both full and ternary weights
+        tmp_net1 = copy.deepcopy(self.model)
+        tmp_net2 = copy.deepcopy(self.model)
+        tmp_net1.load_state_dict(f_dict)
+        tmp_net2.load_state_dict(ter_dict)
+        # evaluate networks on test set
+        _, acc_1 = self.evaluate(tmp_net1)
+        _, acc_2 = self.evaluate(tmp_net2)
+        print('F: %.3f' % acc_1, 'TF: %.3f' % acc_2)
+        # If the ter model loses more than 3 percent accuracy, sent full model instead
+        flag = False
+        if np.abs(acc_1 - acc_2) < 0.03:
+            self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 1")
+            flag = True
+            return ter_dict, flag
+        else:
+            self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 2")
+            return f_dict, flag
+
+    def evaluate(self, eval_model = None):
         """
         Evaluate the current client's model with its data
 
         :return: loss: loss of the model given its data
                  acc: accuracy of the model given its data
         """
+        if eval_model is None:
+            eval_model = self.model
+        eval_model.eval()
+
         self.model.eval()
         loss = 0
         acc = 0
@@ -181,6 +229,7 @@ class Client(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
+        self.send_data.append(len(size))
         self.sock.send(size + msg)
 
     def receive(self):
@@ -200,6 +249,7 @@ class Client(Thread):
             msg = self.sock.recv(buffer)
             data.extend(msg)
             recv_bytes += len(msg)
+        self.received_data.append(len(data))
         return pickle.loads(data)
 
 if __name__ == "__main__":

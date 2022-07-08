@@ -70,6 +70,7 @@ class Server(Thread):
         # End
         self.disconnect_clients()
         self.logger.info("Exiting.")
+        self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
 
         # Plot performance
         fig, ax = plt.subplots()
@@ -79,6 +80,15 @@ class Server(Thread):
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
         fig.savefig("latest_performance_server.png")
+
+        # Plot Data
+        fig, ax = plt.subplots()
+        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.received_data)))
+        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.send_data)))
+        ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        ax.grid()
+        ax.legend(["Received Bytes", "Send Bytes"])
+        fig.savefig("received_and_transmitted_server.png")
 
 
     def connect_clients(self):
@@ -293,6 +303,7 @@ class Server(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
+        self.send_data.append(len(size))
         conn.send(size + msg)
 
     def receive(self, conn, addr):
@@ -313,6 +324,7 @@ class Server(Thread):
             msg = conn.recv(buffer)
             data.extend(msg)
             recv_bytes += len(msg)
+        self.received_data.append(len(data))
         return pickle.loads(data)
 
     def send_signal(self, signal, conn, addr, name): # Signal is Update, Skip or Finish

@@ -13,15 +13,15 @@ def main():
 
 
     fed_config = {"C": 0.2,
-                  "K": 3,
-                  "R": 5,
+                  "K": 2,
+                  "R": 2,
                   "E": 1,
                   "B": 64,
-                  "optimizer": torch.optim.SGD,
+                  "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
                   "data_name": "MNIST",
-                  "iid": False,
+                  "iid": True,
                   "shards_each": 2,
                   "ternary" : True}
     if fed_config["ternary"]:
