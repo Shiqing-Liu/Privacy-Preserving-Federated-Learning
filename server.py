@@ -70,6 +70,7 @@ class Server(Thread):
         # End
         self.disconnect_clients()
         self.logger.info("Exiting.")
+        self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
 
         # Plot performance
         fig, ax = plt.subplots()
@@ -79,6 +80,15 @@ class Server(Thread):
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
         fig.savefig("latest_performance_server.png")
+
+        # Plot Data
+        fig, ax = plt.subplots()
+        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.received_data)))
+        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.send_data)))
+        ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        ax.grid()
+        ax.legend(["Received Bytes", "Send Bytes"])
+        fig.savefig("received_and_transmitted_server.png")
 
 
     def connect_clients(self):
@@ -110,7 +120,9 @@ class Server(Thread):
         self.logger.debug("Start data & model setup.")
 
         self.data = get_data(self.data_name, train=True)
-        self.test_data = get_data(self.data_name, train=False)
+        self.test_data, self.train_data = get_data(self.data_name, train=False)
+
+        self.train_dataloader = torch.utils.data.DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)
         self.test_dataloader = torch.utils.data.DataLoader(self.test_data, batch_size=self.batch_size, shuffle=True)
 
         splits = split_data_by_indices(self.data, self.num_clients, iid=self.iid, shards_each=self.shards_each)
@@ -250,6 +262,29 @@ class Server(Thread):
 
         self.logger.info("Finished training!")
 
+    def train_personalized_layer(self):
+        '''
+        Trains the LAST layer of the model, all other layers are freezed.
+        '''
+        self.model.train()
+        for param in self.model.parameters():
+            param.requires_grad = False
+        list(self.model.parameters())[-1].requires_grad = True
+
+        optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
+        num_epochs = 5
+        for epoch in range(num_epochs):
+            self.logger.debug(f"Train personalised layer: Epoch {epoch + 1}/{num_epochs}...")
+            for x, y in self.train_dataloader:
+                optimizer.zero_grad()
+
+                outputs = self.model(x)
+                loss = self.criterion(outputs, y)
+                loss.backward()
+                optimizer.step()
+        loss, acc = self.evaluate()
+        self.logger.info(f"Train personalised layer: Epoch {num_epochs}/{num_epochs} completed | loss: {loss} | accuracy: {acc}.")
+
     def evaluate(self, eval_model = None):
         """
         Evaluate the current global model with the specified test data.
@@ -296,6 +331,7 @@ class Server(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
+        self.send_data.append(len(size))
         conn.send(size + msg)
 
     def receive(self, conn, addr):
@@ -316,6 +352,7 @@ class Server(Thread):
             msg = conn.recv(buffer)
             data.extend(msg)
             recv_bytes += len(msg)
+        self.received_data.append(len(data))
         return pickle.loads(data)
 
     def send_signal(self, signal, conn, addr, name): # Signal is Update, Skip or Finish
