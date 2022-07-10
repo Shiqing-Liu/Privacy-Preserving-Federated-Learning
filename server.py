@@ -120,7 +120,9 @@ class Server(Thread):
         self.logger.debug("Start data & model setup.")
 
         self.data = get_data(self.data_name, train=True)
-        self.test_data = get_data(self.data_name, train=False)
+        self.test_data, self.train_data = get_data(self.data_name, train=False)
+
+        self.train_dataloader = torch.utils.data.DataLoader(self.train_data, batch_size=self.batch_size, shuffle=True)
         self.test_dataloader = torch.utils.data.DataLoader(self.test_data, batch_size=self.batch_size, shuffle=True)
 
         splits = split_data_by_indices(self.data, self.num_clients, iid=self.iid, shards_each=self.shards_each)
@@ -256,6 +258,29 @@ class Server(Thread):
             self.send_signal("Finish", conn, addr, name)
 
         self.logger.info("Finished training!")
+
+    def train_personalized_layer(self):
+        '''
+        Trains the LAST layer of the model, all other layers are freezed.
+        '''
+        self.model.train()
+        for param in self.model.parameters():
+            param.requires_grad = False
+        list(self.model.parameters())[-1].requires_grad = True
+
+        optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
+        num_epochs = 5
+        for epoch in range(num_epochs):
+            self.logger.debug(f"Train personalised layer: Epoch {epoch + 1}/{num_epochs}...")
+            for x, y in self.train_dataloader:
+                optimizer.zero_grad()
+
+                outputs = self.model(x)
+                loss = self.criterion(outputs, y)
+                loss.backward()
+                optimizer.step()
+        loss, acc = self.evaluate()
+        self.logger.info(f"Train personalised layer: Epoch {num_epochs}/{num_epochs} completed | loss: {loss} | accuracy: {acc}.")
 
     def evaluate(self, eval_model = None):
         """

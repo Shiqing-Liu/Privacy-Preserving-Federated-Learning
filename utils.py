@@ -2,8 +2,11 @@ import torch
 import torchvision
 import numpy as np
 from torchvision import transforms
+from sklearn.model_selection import train_test_split
 
-LESS_DATA = 5000 # Int, >0 if less data should be used, otherwise 0
+LESS_DATA = 100 # Int, >0 if less data should be used, otherwise 0
+SERVER_TEST_SIZE = 100 * 10
+SERVER_TRAIN_SIZE = 100 * 10
 
 def get_data_by_indices(name, train, indices):
     '''
@@ -119,6 +122,15 @@ def get_data(name, train):
     else:
         raise NameError(f"No dataset named {name}. Choose from: CIFAR10, MNIST, FashionMNIST")
 
+    if not train:
+        indices = list(zip(np.arange(len(dataset)), dataset.targets))
+        test_indices, train_indices = train_test_split(indices, test_size=SERVER_TEST_SIZE, train_size=SERVER_TRAIN_SIZE, shuffle=True, stratify=dataset.targets)
+        test_indices, _ = zip(*test_indices)
+        train_indices, _ = zip(*train_indices)
+        dataset = (torch.utils.data.Subset(dataset, test_indices), torch.utils.data.Subset(dataset, train_indices))
+
+
+
     return dataset
 
 class CustomTensorDataset(torch.utils.data.Dataset):
@@ -137,3 +149,6 @@ class CustomTensorDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.tensors[0].size(0)
+
+if __name__ == '__main__':
+    data = get_data("CIFAR10", False)
