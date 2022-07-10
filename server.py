@@ -137,6 +137,7 @@ class Server(Thread):
         :param client_models: State dicts of the clients models in a list
         :param coefficients: Coefficients in a list
         """
+      
         global_dict = self.model.state_dict()
         averaged_dict = OrderedDict()
         for layer in global_dict.keys():
@@ -182,7 +183,9 @@ class Server(Thread):
     def choose_model(self, f_dict, ter_dict):
         # create models based on both full and ternary weights
         tmp_net1 = copy.deepcopy(self.model)
+        #tmp_net1 = nn.Sequential(*list(tmp_net1.modules())[:-1])
         tmp_net2 = copy.deepcopy(self.model)
+        #print("type tmp_net1: ", type(tmp_net1))
         tmp_net1.load_state_dict(f_dict)
         tmp_net2.load_state_dict(ter_dict)
         # evaluate networks on test set
@@ -329,10 +332,10 @@ class Server(Thread):
         self.send(conn, addr, signal)
         self.logger.debug(f"Server --{signal}--> {name}")
         if signal == "Update":
-            self.send(conn, addr, self.model.state_dict())
+            self.send(conn, addr, self.model.state_dict())  #personalized layer will not be sent
             self.logger.debug(f"Server --Model--> {name}")
         elif signal == "Finish":
-            self.send(conn, addr, self.model.state_dict())
+            self.send(conn, addr, self.model.state_dict()) #personalized layer will not be sent
             self.logger.debug(f"Server --Model--> {name}")
             return
         data = self.receive(conn, addr)

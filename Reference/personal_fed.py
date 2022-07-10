@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
         # Updating base layers of the clients and keeping the personalized layers same
         for idx in range(args.num_users):
-            for i  in list(w_glob.keys())[0:base_layers]:
+            for i in list(w_glob.keys())[0:base_layers]:
                 w_locals[idx][i] = copy.deepcopy(w_glob[i]) 
             local_nets[idx].load_state_dict(w_locals[idx])
 

@@ -34,7 +34,7 @@ class Net_3(nn.Module):
         ]))
 
         # fully connected layer, output 10 classes
-        self.fp_fc = nn.Linear(1152, 10)
+        self.fp_fc = nn.Linear(1152, 10)  #personalized layer
     def forward(self, x):
         x = self.fp_conv1(x)
         x = self.ternary_con2(x)

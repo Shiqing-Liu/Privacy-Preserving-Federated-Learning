@@ -5,12 +5,9 @@ import struct
 from socket import socket, AF_INET, SOCK_STREAM
 import matplotlib.pyplot as plt
 import numpy as np
-
 from config import SERVER_HOST, SERVER_PORT
 from utils import get_data_by_indices
-
 from threading import Thread
-
 import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -65,13 +62,26 @@ class Client(Thread):
             self.logger.info(f"{self.name} <--{signal}-- Server")
             if signal == "Update":
                 model = self.receive()
+                #model_keys = list(model.keys())
+                #print("model keys: ", model_keys)
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Model-- Server")
                 self.update()
-                self.send(self.model.state_dict())
+                list_keys_weights = list(self.model.state_dict().keys())
+                model_weights = self.model.state_dict().copy()
+                model_weights.pop(list_keys_weights[-1])
+                model_weights.pop(list_keys_weights[-2])
+                self.send(model_weights)
+                #self.send(self.model.state_dict()) #last layer will not be sent to the server
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Skip":
-                self.send(self.model.state_dict())
+                list_keys_weights = list(self.model.state_dict().keys())
+                model_weights = self.model.state_dict().copy()
+                model_weights.pop(list_keys_weights[-1])
+                model_weights.pop(list_keys_weights[-2])
+                self.send(model_weights)
+                #self.send(self.model.state_dict())
+
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
                 model = self.receive()
