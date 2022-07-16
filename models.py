@@ -44,6 +44,8 @@ class Net_3(nn.Module):
         return output
 
 
+
+
 def Quantized_CNN(pre_model, conf):
     """
     quantize the moderated cnn model
@@ -96,6 +98,7 @@ class Net_1(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
 
 class Net_2(nn.Module):
     def __init__(self):

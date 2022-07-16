@@ -13,9 +13,9 @@ def main():
 
 
     fed_config = {"C": 0.2,
-                  "K": 2,
-                  "R": 2,
-                  "E": 1,
+                  "K": 3,
+                  "R": 4,
+                  "E": 2,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
@@ -23,7 +23,7 @@ def main():
                   "data_name": "MNIST",
                   "iid": True,
                   "shards_each": 2,
-                  "ternary" : True}
+                  "ternary": True}
     if fed_config["ternary"]:
         model = Quantized_CNN(Net_3(), fed_config)
     else:

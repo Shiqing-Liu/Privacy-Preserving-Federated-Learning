@@ -197,7 +197,6 @@ class Server(Thread):
         tmp_net1 = copy.deepcopy(self.model)
         #tmp_net1 = nn.Sequential(*list(tmp_net1.modules())[:-1])
         tmp_net2 = copy.deepcopy(self.model)
-        #print("type tmp_net1: ", type(tmp_net1))
         tmp_net1.load_state_dict(f_dict)
         tmp_net2.load_state_dict(ter_dict)
         # evaluate networks on test set
@@ -237,7 +236,9 @@ class Server(Thread):
                     if not future.done():
                         finished_round = False
                         continue
-            client_models = [future.result() for future in futures]
+            client_models = [future.result() for future in futures]  #last layer should be filled with random numbers
+
+
 
         coefficients = [size/sum(self.clients_data_len) for size in self.clients_data_len]
 

@@ -10,6 +10,7 @@ from config import SERVER_HOST, SERVER_PORT
 from utils import get_data_by_indices
 from threading import Thread
 import logging
+from random import random
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M:%S',
@@ -28,6 +29,7 @@ class Client(Thread):
         self.ternary = True
         self.accs = []
         self.losses = []
+        self.personalized_weight = []
 
     def run(self):
         '''
@@ -65,25 +67,40 @@ class Client(Thread):
             self.logger.info(f"{self.name} <--{signal}-- Server")
             if signal == "Update":
                 model = self.receive()
-                #model_keys = list(model.keys())
-                #print("model keys: ", model_keys)
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Model-- Server")
                 self.update()
+
+                # list of keys to acess the weights of last layer
                 list_keys_weights = list(self.model.state_dict().keys())
-                model_weights = self.model.state_dict().copy()
-                model_weights.pop(list_keys_weights[-1])
-                model_weights.pop(list_keys_weights[-2])
-                self.send(model_weights)
-                #self.send(self.model.state_dict()) #last layer will not be sent to the server
+                #weights + bias of last layer after the update
+                personalized_weights = {list_keys_weights[k]: self.model.state_dict()[list_keys_weights[k]] for k in(-2, -1)}
+                self.personalized_weight.append(personalized_weights)
+
+                #replace last layer's weights and bias with random numbers before sending them to the server
+                fc_weight_to_np = self.model.state_dict()[list_keys_weights[-2]].cpu().detach().numpy()
+                fc_bias_to_np = self.model.state_dict()[list_keys_weights[-1]].cpu().detach().numpy()
+                for index in np.ndindex(fc_bias_to_np.shape):
+                    fc_bias_to_np[index] = random()
+                fc_bias_to_tensor = torch.from_numpy(fc_bias_to_np)
+
+                for index in np.ndindex(fc_weight_to_np.shape):
+                    fc_weight_to_np[index] = random()
+                fc_weight_to_tensor = torch.from_numpy(fc_weight_to_np)
+
+                last_layer_to_be_sent = {list_keys_weights[-2]: fc_weight_to_tensor, list_keys_weights[-1]: fc_bias_to_tensor}
+                self.model.state_dict().update(last_layer_to_be_sent)
+
+                #send weights to the server
+                self.send(self.model.state_dict())
+
+                # personalized weights get their values again
+                last_weights = self.personalized_weight[-1]
+                self.model.state_dict().update(last_weights)
+
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Skip":
-                list_keys_weights = list(self.model.state_dict().keys())
-                model_weights = self.model.state_dict().copy()
-                model_weights.pop(list_keys_weights[-1])
-                model_weights.pop(list_keys_weights[-2])
-                self.send(model_weights)
-                #self.send(self.model.state_dict())
+                self.send(self.model.state_dict())
 
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
@@ -126,7 +143,7 @@ class Client(Thread):
         self.logger.debug(f"Start training...")
 
         self.model.train()
-        
+
 
         optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
         for epoch in range(self.epochs):
@@ -145,9 +162,9 @@ class Client(Thread):
             self.accs.append(acc)
             self.logger.info(f"Epoch {epoch+1}/{self.epochs} completed: loss: {loss}, accuracy: {acc}.")
         if self.ternary:
-            backup_w = copy.deepcopy(self.model.state_dict())
+            backup_w = self.model.state_dict().copy()
             ter_avg = self.quantize_client(backup_w)
-            w, _ = self.choose_model(self.model.state_dict().items(), ter_avg)
+            w, _ = self.choose_model(self.model.state_dict(), ter_avg)
             self.model.load_state_dict(w)
         self.logger.info("Finished training!")
 
@@ -185,7 +202,7 @@ class Client(Thread):
             self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 2")
             return f_dict, flag
 
-    def evaluate(self, eval_model = None):
+    def evaluate(self, eval_model=None):
         """
         Evaluate the current client's model with its data
 
