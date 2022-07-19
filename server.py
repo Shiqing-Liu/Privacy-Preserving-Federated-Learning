@@ -216,15 +216,15 @@ class Server(Thread):
         # evaluate networks on test set
         _, acc_1 = self.evaluate(tmp_net1)
         _, acc_2 = self.evaluate(tmp_net2)
-        print('F: %.3f' % acc_1, 'TF: %.3f' % acc_2)
+        self.logger.debug('Accuracy with different weights. F: %.3f' % acc_1 + ', TF: %.3f' % acc_2)
         # If the ter model loses more than 3 percent accuracy, sent full model instead
         flag = False
         if np.abs(acc_1 - acc_2) < 0.03:
-            self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 1")
+            self.logger.info(f"Accuracy difference: {np.abs(acc_1 - acc_2)}, Choosing Strategy 1")
             flag = True
             return ter_dict, flag
         else:
-            self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 2")
+            self.logger.info(f"Accuracy difference: {np.abs(acc_1 - acc_2)}, Choosing Strategy 2")
             return f_dict, flag
 
     def train(self):
@@ -268,6 +268,7 @@ class Server(Thread):
             self.current_round = r
             self.logger.debug(f"Round {r}/{self.num_rounds}...")
             self.train()
+            self.train_personalized_layer()
             loss, acc = self.evaluate()
             self.losses.append(loss)
             self.accs.append(acc)
@@ -299,7 +300,7 @@ class Server(Thread):
                 loss.backward()
                 optimizer.step()
         loss, acc = self.evaluate()
-        self.logger.info(f"Train personalised layer: Epoch {num_epochs}/{num_epochs} completed | loss: {loss} | accuracy: {acc}.")
+        self.logger.info(f"Trained personalised layer for {num_epochs}/{num_epochs} epochs | loss: {loss} | accuracy: {acc}.")
 
     def evaluate(self, eval_model = None):
         """
