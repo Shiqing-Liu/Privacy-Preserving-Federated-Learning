@@ -41,7 +41,7 @@ class Server(Thread):
         self.clients = []
         self.clients_data_len = []
         self.clients_names = []
-
+        self.current_round = 0
         self.received_data = []
         self.send_data = []
 
@@ -72,6 +72,7 @@ class Server(Thread):
         self.logger.info("Exiting.")
         self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
 
+        # add second y axis for each dimension
         # Plot performance
         fig, ax = plt.subplots()
         ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs)
@@ -81,11 +82,24 @@ class Server(Thread):
         ax.legend(["Accuracy", "Loss"])
         fig.savefig("latest_performance_server.png")
 
+        received_data_cum = [0] * (self.num_rounds + 1)
+        send_data_cum = [0] * (self.num_rounds + 1)
+        for v in self.received_data:
+            received_data_cum[v[0]] += v[1]
+        received_data_cum = np.cumsum(received_data_cum)
+
+        for v in self.send_data:
+            send_data_cum[v[0]] += v[1]
+        send_data_cum = np.cumsum(send_data_cum)
+
         # Plot Data
         fig, ax = plt.subplots()
-        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.received_data)))
-        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.send_data)))
-        ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        ax.plot(np.arange(0, self.num_rounds + 1, dtype="int32"), received_data_cum)
+        ax.plot(np.arange(0, self.num_rounds + 1, dtype="int32"), send_data_cum)
+        ax.set_xticks(np.arange(0, self.num_rounds + 1, dtype="int32"))
+        plt.title("Incoming and outgoing Bytes")
+        plt.ylabel("Bytes")
+        plt.xlabel("Round")
         ax.grid()
         ax.legend(["Received Bytes", "Send Bytes"])
         fig.savefig("received_and_transmitted_server.png")
@@ -251,6 +265,7 @@ class Server(Thread):
         self.logger.debug("Start training...")
 
         for r in range(1, self.num_rounds + 1):
+            self.current_round = r
             self.logger.debug(f"Round {r}/{self.num_rounds}...")
             self.train()
             loss, acc = self.evaluate()
@@ -332,7 +347,7 @@ class Server(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
-        self.send_data.append(len(size))
+        self.send_data.append((self.current_round, len(size)))
         conn.send(size + msg)
 
     def receive(self, conn, addr):
@@ -353,7 +368,7 @@ class Server(Thread):
             msg = conn.recv(buffer)
             data.extend(msg)
             recv_bytes += len(msg)
-        self.received_data.append(len(data))
+        self.received_data.append((self.current_round, len(data)))
         return pickle.loads(data)
 
     def send_signal(self, signal, conn, addr, name): # Signal is Update, Skip or Finish
