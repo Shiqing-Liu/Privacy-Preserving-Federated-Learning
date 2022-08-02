@@ -5,7 +5,7 @@ from torchvision import transforms
 from sklearn.model_selection import train_test_split
 
 
-LESS_DATA = 100 # Int, >0 if less data should be used, otherwise 0
+LESS_DATA = 1500 # Int, >0 if less data should be used, otherwise 0
 SERVER_TEST_SIZE = 100 * 10
 SERVER_TRAIN_SIZE = 100 * 10
 

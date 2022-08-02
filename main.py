@@ -14,7 +14,7 @@ def main():
 
     fed_config = {"C": 0.2,
                   "K": 3,
-                  "R": 4,
+                  "R": 10,
                   "E": 2,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
@@ -24,6 +24,7 @@ def main():
                   "iid": True,
                   "shards_each": 2,
                   "ternary": True}
+
     if fed_config["ternary"]:
         model = Quantized_CNN(Net_3(), fed_config)
     else:

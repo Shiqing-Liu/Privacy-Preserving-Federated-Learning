@@ -30,6 +30,7 @@ class Server(Thread):
         self.local_epochs = fed_config["E"]
         self.batch_size = fed_config["B"]
 
+
         self.optimizer = fed_config["optimizer"]
         self.criterion = fed_config["criterion"]
         self.learning_rate = fed_config["lr"]
@@ -42,6 +43,7 @@ class Server(Thread):
         self.clients_data_len = []
         self.clients_names = []
 
+        self.cur_round = 1
         self.received_data = []
         self.send_data = []
 
@@ -81,11 +83,25 @@ class Server(Thread):
         ax.legend(["Accuracy", "Loss"])
         fig.savefig("latest_performance_server.png")
 
+        cumsum_send = {}
+        for (i, j) in self.send_data:
+            if i in cumsum_send.keys():
+                cumsum_send[i] += j
+            else:
+                cumsum_send[i] = j
+        cumsum_rec = {}
+        for (i, j) in self.received_data:
+            if i in cumsum_rec.keys():
+                cumsum_rec[i] += j
+            else:
+                cumsum_rec[i] = j
+
         # Plot Data
         fig, ax = plt.subplots()
-        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.received_data)))
-        ax.plot(np.arange(1, self.num_rounds + 1, dtype="int32"), np.cumsum(np.asarray(self.send_data)))
-        ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))))
+        ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))))
+        plt.xlabel("Rounds")
+        plt.ylabel("Bytesleistung")
         ax.grid()
         ax.legend(["Received Bytes", "Send Bytes"])
         fig.savefig("received_and_transmitted_server.png")
@@ -251,6 +267,7 @@ class Server(Thread):
         self.logger.debug("Start training...")
 
         for r in range(1, self.num_rounds + 1):
+            self.cur_round += 1
             self.logger.debug(f"Round {r}/{self.num_rounds}...")
             self.train()
             loss, acc = self.evaluate()
@@ -332,7 +349,7 @@ class Server(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
-        self.send_data.append(len(size))
+        self.send_data.append((self.cur_round, len(size)))
         conn.send(size + msg)
 
     def receive(self, conn, addr):
@@ -353,7 +370,7 @@ class Server(Thread):
             msg = conn.recv(buffer)
             data.extend(msg)
             recv_bytes += len(msg)
-        self.received_data.append(len(data))
+        self.received_data.append((self.cur_round, len(data)))
         return pickle.loads(data)
 
     def send_signal(self, signal, conn, addr, name): # Signal is Update, Skip or Finish
