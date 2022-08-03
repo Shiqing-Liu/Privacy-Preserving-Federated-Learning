@@ -1,20 +1,19 @@
 import torch
 from torch import nn
-import time
+import time, os
 
 from models import *
 from server import Server
 from client import Client
-from config import SERVER_HOST, SERVER_PORT
+from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
+from utils import LESS_DATA, SERVER_TEST_SIZE, SERVER_TRAIN_SIZE
 
 
 def main():
-    classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
 
     fed_config = {"C": 0.2,
                   "K": 3,
-                  "R": 10,
+                  "R": 2,
                   "E": 2,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
@@ -28,13 +27,23 @@ def main():
     if fed_config["ternary"]:
         model = Quantized_CNN(Net_3(), fed_config)
     else:
-        model = Net_2
+        model = Net_2()
 
     server = Server(model, fed_config, SERVER_HOST, SERVER_PORT)
     clients = []
     for i in range(fed_config["K"]):
         time.sleep(3)
         clients.append(Client(f"Client_{i + 1}", SERVER_HOST, SERVER_PORT))
+
+    # Save configurations
+    with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
+        f.write(f"The following training was conducted:\n\n")
+        for key, value in fed_config.items():
+            f.write(f"{key}: {value}\n")
+        f.write(f"model: {type(model)}\n")
+        f.write(f"LESS_DATA: {LESS_DATA}\n")
+        f.write(f"SERVER_TEST_SIZE: {SERVER_TEST_SIZE}\n")
+        f.write(f"SERVER_TRAIN_SIZE: {SERVER_TRAIN_SIZE}\n")
 
     server.start()
     for client in clients: client.start()

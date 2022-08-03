@@ -1,5 +1,5 @@
 import torch
-import copy
+import copy, os
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
@@ -10,7 +10,7 @@ import concurrent.futures
 
 from threading import Thread
 
-from config import SERVER_HOST, SERVER_PORT
+from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
 from utils import get_data, split_data_by_indices
 from models import *
 
@@ -81,7 +81,7 @@ class Server(Thread):
         ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
-        fig.savefig("latest_performance_server.png")
+        fig.savefig(os.path.join(SAVE_PATH, "performance_server.png"))
 
         cumsum_send = {}
         for (i, j) in self.send_data:
@@ -104,7 +104,7 @@ class Server(Thread):
         plt.ylabel("Bytesleistung")
         ax.grid()
         ax.legend(["Received Bytes", "Send Bytes"])
-        fig.savefig("received_and_transmitted_server.png")
+        fig.savefig(os.path.join(SAVE_PATH, "received_and_transmitted_server.png"))
 
 
     def connect_clients(self):

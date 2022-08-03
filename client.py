@@ -1,3 +1,5 @@
+import os
+
 import torch
 from collections import Counter
 import pickle
@@ -6,7 +8,7 @@ import copy
 from socket import socket, AF_INET, SOCK_STREAM
 import matplotlib.pyplot as plt
 import numpy as np
-from config import SERVER_HOST, SERVER_PORT
+from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
 from utils import get_data_by_indices
 from threading import Thread
 import logging
@@ -148,7 +150,7 @@ class Client(Thread):
         ax.set_xticks(np.arange(0, len(self.accs)))
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
-        fig.savefig("latest_performance_" + self.name + ".png")
+        fig.savefig(os.path.join(os.getcwd(), "performance_" + self.name + ".png"))
 
 
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion):
