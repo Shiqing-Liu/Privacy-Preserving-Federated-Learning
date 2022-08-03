@@ -28,7 +28,6 @@ class Client(Thread):
         self.port = port
         self.send_data = []
         self.received_data = []
-        self.ternary = True
         self.accs = []
         self.losses = []
         self.personalized_weight = []
@@ -54,6 +53,7 @@ class Client(Thread):
                         optimizer=config["optimizer"],
                         learning_rate=config["learning_rate"],
                         criterion=config["criterion"],
+                        ternary=config["ternary"],
                         personalized=config["personalized"])
         self.logger.debug(f"Received parameters from server and set them.")
         self.logger.info(f"Data distribution: {str(self.class_distribution())}")
@@ -154,7 +154,7 @@ class Client(Thread):
         fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
 
-    def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, personalized):
+    def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, ternary, personalized):
         """
         Set parameters of the client for the training rounds. Must be called at least once after creation of a
         client.
@@ -170,6 +170,7 @@ class Client(Thread):
         self.optimizer = optimizer
         self.learning_rate = learning_rate
         self.criterion = criterion
+        self.ternary = ternary
         self.personalized = personalized
 
     def update(self):

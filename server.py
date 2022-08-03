@@ -29,6 +29,7 @@ class Server(Thread):
         self.num_rounds = fed_config["R"]
         self.local_epochs = fed_config["E"]
         self.batch_size = fed_config["B"]
+        self.ternary = fed_config["ternary"]
 
         self.optimizer = fed_config["optimizer"]
         self.criterion = fed_config["criterion"]
@@ -149,6 +150,7 @@ class Server(Thread):
                          "learning_rate": self.learning_rate,
                          "criterion": self.criterion,
                          "data_name": self.data_name,
+                         "ternary": self.ternary,
                          "personalized": self.personalized}
         for i, (conn, addr) in enumerate(self.clients):
             self.send(conn, addr, self.data_name)
