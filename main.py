@@ -19,15 +19,21 @@ def main():
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
-                  "data_name": "MNIST",
+                  "data_name": "CIFAR100",
                   "iid": True,
                   "shards_each": 2,
                   "ternary": True}
 
-    if fed_config["ternary"]:
+    if fed_config["ternary"]  & fed_config["data_name"] == "MNIST":
+        model = Quantized_CNN(Net_3(), fed_config)
+    elif fed_config["data_name"] == "MNIST":
+        model = Net_2()
+
+    if fed_config["ternary"] & fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_3(), fed_config)
     else:
         model = Net_2()
+
 
     server = Server(model, fed_config, SERVER_HOST, SERVER_PORT)
     clients = []

@@ -44,6 +44,40 @@ class Net_3(nn.Module):
         return output
 
 
+class Net_4(nn.Module):
+    def __init__(self, n_classes = 10):
+        super().__init__()
+        self.fp_conv1 = nn.Sequential(OrderedDict([
+            ("conv0", nn.Conv2d(
+                in_channels=3,
+                out_channels=6,
+                kernel_size=5
+            )),
+            ("relu0", nn.ReLU(inplace=True)),
+            ("pool0", nn.MaxPool2d(kernel_size=2))
+        ]))
+        self.ternary_con2 = nn.Sequential(OrderedDict([
+            ("conv1",nn.Conv2d(3,6,5)),
+            ('relu2', nn.ReLU(inplace=True)),
+            ("pool1", nn.MaxPool2d(2)),
+            ('conv2', nn.Conv2d(6,16,5)),
+            ('relu2', nn.ReLU(inplace=True))
+        ]))
+        self.fp_fc = nn.Sequential(OrderedDict([
+            ("fp_fc1", nn.Linear(16 * 5 * 5, 120)),
+            ("fp_fc2", nn.Linear(120, 84)),
+            ("fp_fc1", nn.Linear(84,n_classes))
+        ]))
+        # fully connected layer, output 10 classes
+
+    def forward(self, x):
+        x = self.fp_conv1(x)
+        x = self.ternary_con2(x)
+        x = x.view(x.size(0), -1)
+        x = self.fp_fc(x)
+        # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
+        return x
+
 
 
 def Quantized_CNN(pre_model, conf):
