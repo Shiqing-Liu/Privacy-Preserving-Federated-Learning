@@ -7,4 +7,5 @@ if os.path.isdir(SAVE_PATH):
 os.mkdir(SAVE_PATH)
 
 SERVER_HOST = "localhost"
-SERVER_PORT = 9995
+SERVER_PORT = 9990
+PERSONALIZED = True

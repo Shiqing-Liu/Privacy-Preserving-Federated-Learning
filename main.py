@@ -45,7 +45,7 @@ def main():
     clients = []
     for i in range(fed_config["K"]):
         time.sleep(3)
-        clients.append(Client(f"Client_{i + 1}", SERVER_HOST, SERVER_PORT))
+        clients.append(Client(f"Client_{i + 1}", SERVER_HOST, SERVER_PORT, fed_config["personalized"]))
 
     # Save configurations
     with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:

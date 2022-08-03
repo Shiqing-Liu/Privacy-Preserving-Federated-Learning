@@ -1,0 +1,19 @@
+The following training was conducted:
+
+C: 0.2
+K: 3
+R: 2
+E: 2
+B: 64
+optimizer: <class 'torch.optim.adam.Adam'>
+criterion: CrossEntropyLoss()
+lr: 0.01
+data_name: CIFAR100
+iid: True
+shards_each: 2
+ternary: True
+personalized: True
+model: <class 'models.Net_4'>
+LESS_DATA: 1000
+SERVER_TEST_SIZE: 100
+SERVER_TRAIN_SIZE: 100

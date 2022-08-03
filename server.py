@@ -392,10 +392,10 @@ class Server(Thread):
         self.send(conn, addr, signal)
         self.logger.debug(f"Server --{signal}--> {name}")
         if signal == "Update":
-            self.send(conn, addr, self.model.state_dict())  #personalized layer will not be sent
+            self.send(conn, addr, self.model.state_dict())
             self.logger.debug(f"Server --Model--> {name}")
         elif signal == "Finish":
-            self.send(conn, addr, self.model.state_dict()) #personalized layer will not be sent
+            self.send(conn, addr, self.model.state_dict())
             self.logger.debug(f"Server --Model--> {name}")
             return
         data = self.receive(conn, addr)
