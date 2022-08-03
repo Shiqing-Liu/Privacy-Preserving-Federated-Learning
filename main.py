@@ -29,11 +29,16 @@ def main():
         model = Quantized_CNN(Net_3(), fed_config)
     elif fed_config["data_name"] == "MNIST":
         model = Net_2()
-
-    if fed_config["ternary"] & fed_config["data_name"] == "MNIST":
-        model = Quantized_CNN(Net_3(), fed_config)
+    elif fed_config["ternary"] & fed_config["data_name"] == "CIFAR100":
+        model = Quantized_CNN(Net_4(100), fed_config)
+    elif fed_config["data_name"] == "CIFAR100":
+        model = Net_4(100)
+    elif fed_config["ternary"] & fed_config["data_name"] == "CIFAR10":
+        model = Quantized_CNN(Net_4(10), fed_config)
+    elif fed_config["data_name"] == "CIFAR10":
+        model = Net_4(10)
     else:
-        model = Net_2()
+        raise AssertionError("No fitting model found. Check your parameters!")
 
 
     server = Server(model, fed_config, SERVER_HOST, SERVER_PORT)
