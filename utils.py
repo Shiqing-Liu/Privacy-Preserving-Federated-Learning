@@ -32,7 +32,7 @@ def get_data_by_indices(name, train, indices):
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         dataset = torchvision.datasets.CIFAR100(root='./data', train=train, download=True, transform=transform)
     else:
-        raise NameError(f"No dataset named {name}. Choose from: CIFAR10, MNIST, FashionMNIST")
+        raise NameError(f"No dataset named {name}. Choose from: CIFAR10, CIFAR100, MNIST, FashionMNIST")
 
     return torch.utils.data.Subset(dataset, indices)
 
@@ -128,7 +128,7 @@ def get_data(name, train):
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         dataset = torchvision.datasets.CIFAR100(root='./data', train=train, download=True, transform=transform)
     else:
-        raise NameError(f"No dataset named {name}. Choose from: CIFAR10, MNIST, FashionMNIST")
+        raise NameError(f"No dataset named {name}. Choose from: CIFAR10, CIFAR100, MNIST, FashionMNIST")
 
     if not train:
         indices = list(zip(np.arange(len(dataset)), dataset.targets))
