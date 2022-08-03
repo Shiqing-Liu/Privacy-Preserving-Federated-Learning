@@ -5,9 +5,9 @@ from torchvision import transforms
 from sklearn.model_selection import train_test_split
 
 
-LESS_DATA = 1500 # Int, >0 if less data should be used, otherwise 0
-SERVER_TEST_SIZE = 100 * 10
-SERVER_TRAIN_SIZE = 100 * 10
+LESS_DATA = 1000 # Int, >0 if less data should be used, otherwise 0
+SERVER_TEST_SIZE = 100 #* 10
+SERVER_TRAIN_SIZE = 100 #* 10
 
 
 def get_data_by_indices(name, train, indices):
@@ -28,6 +28,9 @@ def get_data_by_indices(name, train, indices):
     elif name == "FashionMNIST": # 10 classes
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5), (0.5))])
         dataset = torchvision.datasets.FashionMNIST(root='./data', train=train, download=True, transform=transform)
+    elif name == "CIFAR100": # 100 classes
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        dataset = torchvision.datasets.CIFAR100(root='./data', train=train, download=True, transform=transform)
     else:
         raise NameError(f"No dataset named {name}. Choose from: CIFAR10, MNIST, FashionMNIST")
 
@@ -121,6 +124,9 @@ def get_data(name, train):
     elif name == "FashionMNIST": # 10 classes
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5), (0.5))])
         dataset = torchvision.datasets.FashionMNIST(root='./data', train=train, download=True, transform=transform)
+    elif name == "CIFAR100": # 100 classes
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+        dataset = torchvision.datasets.CIFAR100(root='./data', train=train, download=True, transform=transform)
     else:
         raise NameError(f"No dataset named {name}. Choose from: CIFAR10, MNIST, FashionMNIST")
 

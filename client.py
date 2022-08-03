@@ -267,7 +267,8 @@ class Client(Thread):
 
         :return: Class distribution of the local dataset
         '''
-        return sorted(Counter(self.data.dataset.targets[self.data.indices].numpy()).items())
+        np_targets = np.array(self.data.dataset.targets)
+        return sorted(Counter(np_targets[self.data.indices]).items())
 
     def setup_socket(self, host, port):
         sock = socket(AF_INET, SOCK_STREAM)
