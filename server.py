@@ -260,8 +260,10 @@ class Server(Thread):
 
 
         coefficients = [size/sum(self.clients_data_len) for size in self.clients_data_len]
-
-        self.average_model_quant(client_models, coefficients)
+        if self.ternary:
+            self.average_model_quant(client_models, coefficients)
+        else:
+            self.average_model(client_models,coefficients)
 
     def fit(self):
         """

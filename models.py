@@ -51,24 +51,22 @@ class Net_4(nn.Module):
             ("conv0", nn.Conv2d(
                 in_channels=3,
                 out_channels=6,
-                kernel_size=5
+                kernel_size=5,
+                bias=False
             )),
             ("relu0", nn.ReLU(inplace=True)),
             ("pool0", nn.MaxPool2d(kernel_size=2))
         ]))
         self.ternary_con2 = nn.Sequential(OrderedDict([
-            ("conv1",nn.Conv2d(3,6,5)),
-            ('relu2', nn.ReLU(inplace=True)),
-            ("pool1", nn.MaxPool2d(2)),
-            ('conv2', nn.Conv2d(6,16,5)),
-            ('relu2', nn.ReLU(inplace=True))
+            ('conv1', nn.Conv2d(6,16,5, bias=False)),
+            ('relu1', nn.ReLU(inplace=True)),
+            ("pool1", nn.MaxPool2d(2))
         ]))
         self.fp_fc = nn.Sequential(OrderedDict([
             ("fp_fc1", nn.Linear(16 * 5 * 5, 120)),
             ("fp_fc2", nn.Linear(120, 84)),
-            ("fp_fc1", nn.Linear(84,n_classes))
+            ("fp_fc3", nn.Linear(84, n_classes))
         ]))
-        # fully connected layer, output 10 classes
 
     def forward(self, x):
         x = self.fp_conv1(x)
