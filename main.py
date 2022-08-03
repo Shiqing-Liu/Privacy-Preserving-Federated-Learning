@@ -22,7 +22,8 @@ def main():
                   "data_name": "CIFAR100",
                   "iid": True,
                   "shards_each": 2,
-                  "ternary": True}
+                  "ternary": True,
+                  "personalized": True}
 
     if fed_config["ternary"]  & fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_3(), fed_config)

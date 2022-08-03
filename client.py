@@ -53,7 +53,8 @@ class Client(Thread):
                         batch_size=config["batch_size"],
                         optimizer=config["optimizer"],
                         learning_rate=config["learning_rate"],
-                        criterion=config["criterion"])
+                        criterion=config["criterion"],
+                        personalized=config["personalized"])
         self.logger.debug(f"Received parameters from server and set them.")
         self.logger.info(f"Data distribution: {str(self.class_distribution())}")
 
@@ -153,7 +154,7 @@ class Client(Thread):
         fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
 
-    def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion):
+    def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, personalized):
         """
         Set parameters of the client for the training rounds. Must be called at least once after creation of a
         client.
@@ -169,6 +170,7 @@ class Client(Thread):
         self.optimizer = optimizer
         self.learning_rate = learning_rate
         self.criterion = criterion
+        self.personalized = personalized
 
     def update(self):
         """

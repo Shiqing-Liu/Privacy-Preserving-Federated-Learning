@@ -30,7 +30,6 @@ class Server(Thread):
         self.local_epochs = fed_config["E"]
         self.batch_size = fed_config["B"]
 
-
         self.optimizer = fed_config["optimizer"]
         self.criterion = fed_config["criterion"]
         self.learning_rate = fed_config["lr"]
@@ -39,6 +38,7 @@ class Server(Thread):
         self.data_name = fed_config["data_name"]
         self.iid = fed_config["iid"]
         self.shards_each = fed_config["shards_each"]
+        self.personalized = fed_config["personalized"]
         self.clients = []
         self.clients_data_len = []
         self.clients_names = []
@@ -148,7 +148,8 @@ class Server(Thread):
                          "optimizer": self.optimizer,
                          "learning_rate": self.learning_rate,
                          "criterion": self.criterion,
-                         "data_name": self.data_name}
+                         "data_name": self.data_name,
+                         "personalized": self.personalized}
         for i, (conn, addr) in enumerate(self.clients):
             self.send(conn, addr, self.data_name)
             self.clients_data_len.append(len(splits[i]))
