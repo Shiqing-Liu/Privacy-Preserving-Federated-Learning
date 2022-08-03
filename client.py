@@ -150,7 +150,7 @@ class Client(Thread):
         ax.set_xticks(np.arange(0, len(self.accs)))
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
-        fig.savefig(os.path.join(os.getcwd(), "performance_" + self.name + ".png"))
+        fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
 
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion):
