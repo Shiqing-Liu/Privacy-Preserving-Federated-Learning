@@ -8,7 +8,7 @@ import copy
 from socket import socket, AF_INET, SOCK_STREAM
 import matplotlib.pyplot as plt
 import numpy as np
-from config import SERVER_HOST, SERVER_PORT, SAVE_PATH, PERSONALIZED
+from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
 from utils import get_data_by_indices
 from threading import Thread
 import logging
@@ -371,4 +371,4 @@ class Client(Thread):
         return pickle.loads(data)
 
 if __name__ == "__main__":
-    client = Client("client", SERVER_HOST, SERVER_PORT, PERSONALIZED)
+    client = Client("client", SERVER_HOST, SERVER_PORT)
