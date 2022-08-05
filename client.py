@@ -176,8 +176,8 @@ class Client(Thread):
                 f.write(f"Accuracy: {self.accs}\n")
                 f.write(f"Loss: {self.losses}\n")
                 f.write(f"Received data: {self.received_data}\n")
-                f.write(f"Send data: {self.send_data}\n\n\n")
-                f.write(f"Strategies (if used): {self.strategy_history}\n")
+                f.write(f"Send data: {self.send_data}\n")
+                f.write(f"Strategies (if used): {self.strategy_history}\n\n\n")
         cumsum_send = {}
         for (i, j) in self.send_data:
             if i in cumsum_send.keys():
