@@ -58,12 +58,15 @@ def main():
         f.write(f"LESS_DATA: {LESS_DATA}\n")
         f.write(f"SERVER_TEST_SIZE: {SERVER_TEST_SIZE}\n")
         f.write(f"SERVER_TRAIN_SIZE: {SERVER_TRAIN_SIZE}\n\n\n")
-
+    start = time.time()
     server.start()
     for client in clients: client.start()
 
     server.join()
-
+    with lock:
+        with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
+            dur = time.time()-start
+            f.write(f"\n\nDuration: {int(dur//60)} minutes {round(dur%60)} seconds")
     print("Finished!")
 
 
