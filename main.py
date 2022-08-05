@@ -11,10 +11,10 @@ from utils import LESS_DATA, SERVER_TEST_SIZE, SERVER_TRAIN_SIZE
 
 def main():
 
-    fed_config = {"C": 0.2,
-                  "K": 3,
-                  "R": 2,
-                  "E": 2,
+    fed_config = {"C": 0.8, # percentage of clients to pick (floored)
+                  "K": 3, # clients overall
+                  "R": 15, # rounds of training
+                  "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
@@ -23,7 +23,7 @@ def main():
                   "iid": True,
                   "shards_each": 2,
                   "ternary": True,
-                  "personalized": True}
+                  "personalized": False}
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_3(), fed_config)

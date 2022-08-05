@@ -1,0 +1,27 @@
+R | Dataset | Clients | Ternary | Personalized | IID
+F | Cifar100 - Single Lerner
+H | Cifar100 | 3 |  No | No | No
+L | Cifar100 | 3 |  No | No | Yes
+F | Cifar100 | 3 |  Yes | No | No
+H | Cifar100 | 3 |  Yes | No | Yes
+L | Cifar100 | 3 |  No | Yes | No
+F | Cifar100 | 3 |  No | Yes | Yes
+H | Cifar100 | 3 |  Yes | Yes | No
+L | Cifar100 | 3 |  Yes | Yes | Yes
+
+
+TO DO:
+Save intermediate data:
+ - Data distribution at beginning
+ - Results (Bytes send, received, accuracy, loss, number of times each strategy was chosen)
+
+ -> Fabian
+
+
+Implement config via ABSL? -> Check Louis
+Check plots for client + check why transmitted data isn't properly working -> Louis
+
+
+Plots for accuracy, second y axis -> Hela
+
+Comments -> Check yourself
