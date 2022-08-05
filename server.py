@@ -8,7 +8,7 @@ import struct
 from socket import socket, AF_INET, SOCK_STREAM
 import concurrent.futures
 
-from threading import Thread
+from threading import Thread, Lock
 
 from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
 from utils import get_data, split_data_by_indices
@@ -70,6 +70,14 @@ class Server(Thread):
         self.setup_data_and_model()
         self.fit()
 
+        # Save results to file (Is done before disconnecting the clients to avoid that multiple threads access the file)
+        with open(os.path.join(SAVE_PATH, "configuration.txt"), 'a') as f:
+            f.write(f"Information from Server:\n\n")
+            f.write(f"Accuracy: {self.accs}\n")
+            f.write(f"Loss: {self.losses}\n")
+            f.write(f"Received data: {self.received_data}\n")
+            f.write(f"Send data: {self.send_data}\n\n\n")
+
         # End
         self.disconnect_clients()
         self.logger.info("Exiting.")
@@ -106,7 +114,6 @@ class Server(Thread):
         ax.grid()
         ax.legend(["Received Bytes", "Send Bytes"])
         fig.savefig(os.path.join(SAVE_PATH, "received_and_transmitted_server.png"))
-
 
     def connect_clients(self):
         '''

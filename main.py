@@ -7,13 +7,14 @@ from server import Server
 from client import Client
 from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
 from utils import LESS_DATA, SERVER_TEST_SIZE, SERVER_TRAIN_SIZE
+from threading import Lock
 
 
 def main():
 
     fed_config = {"C": 0.8, # percentage of clients to pick (floored)
                   "K": 3, # clients overall
-                  "R": 15, # rounds of training
+                  "R": 1, # rounds of training
                   "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
@@ -43,9 +44,10 @@ def main():
 
     server = Server(model, fed_config, SERVER_HOST, SERVER_PORT)
     clients = []
+    lock = Lock()
     for i in range(fed_config["K"]):
         time.sleep(3)
-        clients.append(Client(f"Client_{i + 1}", SERVER_HOST, SERVER_PORT, fed_config["personalized"]))
+        clients.append(Client(f"Client_{i + 1}", SERVER_HOST, SERVER_PORT, lock))
 
     # Save configurations
     with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
@@ -55,7 +57,7 @@ def main():
         f.write(f"model: {type(model)}\n")
         f.write(f"LESS_DATA: {LESS_DATA}\n")
         f.write(f"SERVER_TEST_SIZE: {SERVER_TEST_SIZE}\n")
-        f.write(f"SERVER_TRAIN_SIZE: {SERVER_TRAIN_SIZE}\n")
+        f.write(f"SERVER_TRAIN_SIZE: {SERVER_TRAIN_SIZE}\n\n\n")
 
     server.start()
     for client in clients: client.start()

@@ -22,7 +22,7 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 
 class Client(Thread):
-    def __init__(self, name, host, port, personalized):
+    def __init__(self, name, host, port, lock):
         Thread.__init__(self)
         self.name = name
         self.logger = self.setup_logger(self.name)
@@ -32,11 +32,9 @@ class Client(Thread):
         self.received_data = []
         self.accs = []
         self.losses = []
+        self.signals = []
         self.personalized_weight = []
-        self.personalized = personalized
-
-
-
+        self.lock = lock
 
     def run(self):
         '''
@@ -70,6 +68,7 @@ class Client(Thread):
         self.logger.info("Ready to start!")
         while True:
             signal = self.receive()
+            self.signals.append(signal)
             if not signal:
                 self.logger.info("No data received: Exiting")
                 break
@@ -157,6 +156,7 @@ class Client(Thread):
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Complete model-- Server")
         self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
+
         # Plot performance
         fig, ax = plt.subplots()
         ax.plot(self.accs)
@@ -167,6 +167,16 @@ class Client(Thread):
         ax.legend(["Accuracy", "Loss"])
         fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
+        # Save results to file
+        with self.lock:
+            with open(os.path.join(SAVE_PATH, "configuration.txt"), 'a') as f:
+                f.write(f"Information from {self.name}:\n\n")
+                f.write(f"Signals: {self.signals}\n")
+                f.write(f"Data distribution: {self.class_distribution()}\n")
+                f.write(f"Accuracy: {self.accs}\n")
+                f.write(f"Loss: {self.losses}\n")
+                f.write(f"Received data: {self.received_data}\n")
+                f.write(f"Send data: {self.send_data}\n\n\n")
 
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, ternary, personalized):
         """
