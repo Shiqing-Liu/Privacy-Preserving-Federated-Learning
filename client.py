@@ -34,6 +34,7 @@ class Client(Thread):
         self.losses = []
         self.personalized_weight = []
         self.personalized = personalized
+        self.round = 0
 
 
 
@@ -164,9 +165,33 @@ class Client(Thread):
         ax.set_xticklabels(np.arange(1, self.epochs + 1, dtype="int32").tolist() * int(len(self.accs)/self.epochs))
         ax.set_xticks(np.arange(0, len(self.accs)))
         ax.grid()
+        plt.title(f"{self.name} performance")
         ax.legend(["Accuracy", "Loss"])
         fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
+        cumsum_send = {}
+        for (i, j) in self.send_data:
+            if i in cumsum_send.keys():
+                cumsum_send[i] += j
+            else:
+                cumsum_send[i] = j
+        cumsum_rec = {}
+        for (i, j) in self.received_data:
+            if i in cumsum_rec.keys():
+                cumsum_rec[i] += j
+            else:
+                cumsum_rec[i] = j
+
+        # Plot Data
+        fig, ax = plt.subplots()
+        ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
+        ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
+        plt.xlabel("Rounds")
+        plt.title(f"{self.name} send/receive")
+        plt.ylabel("Bytesleistung")
+        ax.grid()
+        ax.legend(["Received Bytes", "Send Bytes"])
+        fig.savefig(os.path.join(SAVE_PATH, "send_and_transmit_" + self.name + ".png"))
 
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, ternary, personalized):
         """
@@ -217,6 +242,7 @@ class Client(Thread):
             ter_avg = self.quantize_client(backup_w)
             w, _ = self.choose_model(self.model.state_dict(), ter_avg)
             self.model.load_state_dict(w)
+        self.round += 1
         self.logger.info("Finished training!")
 
     def quantize_client(self, model_dict):
@@ -308,7 +334,7 @@ class Client(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
-        self.send_data.append(len(size))
+        self.send_data.append((self.round, len(msg)))
         self.sock.send(size + msg)
 
     def receive(self):
@@ -328,7 +354,7 @@ class Client(Thread):
             msg = self.sock.recv(buffer)
             data.extend(msg)
             recv_bytes += len(msg)
-        self.received_data.append(len(data))
+        self.received_data.append((self.round, len(data)))
         return pickle.loads(data)
 
 if __name__ == "__main__":

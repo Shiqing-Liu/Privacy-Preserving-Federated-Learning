@@ -80,6 +80,7 @@ class Server(Thread):
         ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs)
         ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.losses)
         ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        plt.title(f"Server Performance")
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
         fig.savefig(os.path.join(SAVE_PATH, "performance_server.png"))
@@ -99,10 +100,11 @@ class Server(Thread):
 
         # Plot Data
         fig, ax = plt.subplots()
-        ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))))
-        ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))))
+        ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
+        ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
         plt.xlabel("Rounds")
         plt.ylabel("Bytesleistung")
+        plt.title(f"Server send/receive")
         ax.grid()
         ax.legend(["Received Bytes", "Send Bytes"])
         fig.savefig(os.path.join(SAVE_PATH, "received_and_transmitted_server.png"))
@@ -354,7 +356,7 @@ class Server(Thread):
         '''
         msg = pickle.dumps(msg)
         size = struct.pack("I", len(msg))
-        self.send_data.append((self.cur_round, len(size)))
+        self.send_data.append((self.cur_round, len(msg)))
         conn.send(size + msg)
 
     def receive(self, conn, addr):
