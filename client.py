@@ -15,11 +15,8 @@ import logging
 from random import random
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M:%S',
-                    )
+                    datefmt='%m-%d %H:%M:%S')
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
-
-
 
 class Client(Thread):
     def __init__(self, name, host, port, lock):
@@ -30,15 +27,13 @@ class Client(Thread):
         self.port = port
         self.send_data = []
         self.received_data = []
+        self.strategy_history = []
         self.accs = []
         self.losses = []
         self.signals = []
         self.personalized_weight = []
         self.lock = lock
         self.round = 0
-
-
-
 
     def run(self):
         '''
@@ -182,6 +177,7 @@ class Client(Thread):
                 f.write(f"Loss: {self.losses}\n")
                 f.write(f"Received data: {self.received_data}\n")
                 f.write(f"Send data: {self.send_data}\n\n\n")
+                f.write(f"Strategies (if used): {self.strategy_history}\n")
         cumsum_send = {}
         for (i, j) in self.send_data:
             if i in cumsum_send.keys():
@@ -233,7 +229,6 @@ class Client(Thread):
 
         self.model.train()
 
-
         optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
         for epoch in range(self.epochs):
             self.logger.debug(f"Epoch {epoch+1}/{self.epochs}...")
@@ -245,7 +240,6 @@ class Client(Thread):
                 loss.backward()
                 optimizer.step()
 
-
             loss, acc = self.evaluate()
             self.losses.append(loss)
             self.accs.append(acc)
@@ -253,7 +247,8 @@ class Client(Thread):
         if self.ternary:
             backup_w = self.model.state_dict().copy()
             ter_avg = self.quantize_client(backup_w)
-            w, _ = self.choose_model(self.model.state_dict(), ter_avg)
+            w, flag = self.choose_model(self.model.state_dict(), ter_avg)
+            self.strategy_history.append("Strategy 1") if flag else self.strategy_history.append("Strategy 2")
             self.model.load_state_dict(w)
         self.round += 1
         self.logger.info("Finished training!")
