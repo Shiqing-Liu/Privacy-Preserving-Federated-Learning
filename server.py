@@ -13,6 +13,7 @@ from threading import Thread, Lock
 from config import SERVER_HOST, SERVER_PORT, SAVE_PATH, device
 from utils import get_data, split_data_by_indices
 from models import *
+from matplotlib.ticker import MaxNLocator
 
 import logging
 logging.basicConfig(level=logging.DEBUG,
@@ -85,16 +86,20 @@ class Server(Thread):
 
         # Plot performance
         fig, ax = plt.subplots()
-        ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.losses, color='blue')
-        ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
+        ax.plot(list(range(len(self.losses))), self.losses, color='blue')
+        ax.set_xlabel("Global Rounds")
         ax.set_ylabel('Loss')
+        ax.legend(["Loss"])
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
         ax2 = ax.twinx()
-        ax2.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs, color='orange')
-        ax2.set_ylim([-0.05, 1.05])
+        ax2.plot(list(range(len(self.accs))), self.accs, color='orange')
         ax2.set_ylabel('Accuracy')
-        plt.title(f"Server Performance")
+        ax2.set_ylim([-0.05, 1.05])
+        ax2.legend(["Accuracy"])
         ax.grid()
-        ax.legend(["Accuracy", "Loss"])
+
+        plt.title(f"Server Performance")
         fig.savefig(os.path.join(SAVE_PATH, "performance_server.png"))
 
         cumsum_send = {}

@@ -13,6 +13,8 @@ from utils import get_data_by_indices
 from threading import Thread
 import logging
 from random import random
+from matplotlib.ticker import MaxNLocator
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M:%S')
@@ -158,17 +160,19 @@ class Client(Thread):
 
         # Plot performance
         fig, ax = plt.subplots()
-        ax.plot(self.losses, color='blue')
-        ax.set_xticklabels(np.arange(1, self.epochs + 1, dtype="int32").tolist() * int(len(self.accs)/self.epochs))
-        ax.set_xticks(np.arange(0, len(self.accs)))
+        ax.plot(list(range(len(self.losses))), self.losses, color='blue')
+        ax.set_xlabel("Local Epochs")
         ax.set_ylabel('Loss')
-        ax2 = ax.twinx()
-        ax2.set_ylabel('Accuracy')
-        ax2.plot(self.accs, color='orange')
-        ax2.set_ylim([-0.05, 1.05])
+        ax.legend(["Loss"])
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.grid()
+
+        ax2 = ax.twinx()
+        ax2.plot(list(range(len(self.losses))), self.accs, color='orange')
+        ax2.set_ylabel('Accuracy')
+        ax2.set_ylim([-0.05, 1.05])
+        ax2.legend(["Accuracy"])
         plt.title(f"{self.name} performance")
-        ax.legend(["Accuracy", "Loss"])
         fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
         # Save results to file
@@ -182,6 +186,7 @@ class Client(Thread):
                 f.write(f"Received data: {self.received_data}\n")
                 f.write(f"Send data: {self.send_data}\n")
                 f.write(f"Strategies (if used): {self.strategy_history}\n\n\n")
+
         cumsum_send = {}
         for (i, j) in self.send_data:
             if i in cumsum_send.keys():
