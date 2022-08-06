@@ -125,15 +125,13 @@ with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
     f.write(f"Losses[-1]: {losses[-1]}")
 
 fig, ax = plt.subplots()
-ax.plot(np.arange(1, EPOCHS+1, dtype="int32"), losses)
+ax.plot(np.arange(1, EPOCHS+1, dtype="int32"), losses, color='blue')
 ax.set_xticks(np.arange(1, EPOCHS + 1, dtype="int32"))
 ax.set_ylabel('Loss')
 ax2 = ax.twinx()
-ax2.plot(np.arange(1, EPOCHS+1, dtype="int32"), accs)
+ax2.plot(np.arange(1, EPOCHS+1, dtype="int32"), accs, color='orange')
 ax2.set_ylim([-0.05, 1.05])
-plt.ylabel('Accuracy')
-
-
+ax2.set_ylabel('Accuracy')
 plt.title(f"Single Learner Performance")
 ax.grid()
 ax.legend(["Accuracy", "Loss"])
