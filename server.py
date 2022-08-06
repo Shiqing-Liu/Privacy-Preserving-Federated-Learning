@@ -1,5 +1,5 @@
 import torch
-import copy, os
+import copy, os, time
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import OrderedDict
@@ -10,7 +10,7 @@ import concurrent.futures
 
 from threading import Thread, Lock
 
-from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
+from config import SERVER_HOST, SERVER_PORT, SAVE_PATH, device
 from utils import get_data, split_data_by_indices
 from models import *
 
@@ -187,6 +187,7 @@ class Server(Thread):
         for layer in global_dict.keys():
             averaged_dict[layer] = torch.zeros(global_dict[layer].shape, dtype=torch.float32)
             for client_dict, coef in zip(client_models, coefficients):
+                client_dict[layer] = client_dict[layer].to("cpu")
                 averaged_dict[layer] += coef * client_dict[layer]
 
         self.model.load_state_dict(averaged_dict)
@@ -285,13 +286,15 @@ class Server(Thread):
         self.logger.debug("Start training...")
 
         for r in range(1, self.num_rounds + 1):
+            start = time.time()
             self.cur_round += 1
             self.logger.debug(f"Round {r}/{self.num_rounds}...")
             self.train()
             loss, acc = self.evaluate()
             self.losses.append(loss)
             self.accs.append(acc)
-            self.logger.info(f"Round {r}/{self.num_rounds} completed: loss: {loss}, accuracy: {acc}.")
+            dur = time.time() - start
+            self.logger.info(f"Round {r}/{self.num_rounds} completed ({int(dur//60)} min {int(dur%60)} sec): loss: {loss:.3f}, accuracy: {acc:.3f}.")
 
         for (conn, addr), name in zip(self.clients, self.clients_names):
             self.send_signal("Finish", conn, addr, name)
@@ -302,6 +305,7 @@ class Server(Thread):
         '''
         Trains the LAST layer of the model, all other layers are freezed.
         '''
+        self.model = self.model.to(device)
         self.model.train()
         for param in self.model.parameters():
             param.requires_grad = False
@@ -310,8 +314,11 @@ class Server(Thread):
         optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
         num_epochs = 5
         for epoch in range(num_epochs):
+            start = time.time()
             self.logger.debug(f"Train personalised layer: Epoch {epoch + 1}/{num_epochs}...")
             for x, y in self.train_dataloader:
+                x = x.to(device)
+                y = y.to(device)
                 optimizer.zero_grad()
 
                 outputs = self.model(x)
@@ -319,7 +326,7 @@ class Server(Thread):
                 loss.backward()
                 optimizer.step()
         loss, acc = self.evaluate()
-        self.logger.info(f"Train personalised layer: Epoch {num_epochs}/{num_epochs} completed | loss: {loss} | accuracy: {acc}.")
+        self.logger.info(f"Train personalised layer: Epoch {num_epochs}/{num_epochs} completed ({time.time()-start} sec)| loss: {loss} | accuracy: {acc}.")
 
     def evaluate(self, eval_model = None):
         """
@@ -330,12 +337,14 @@ class Server(Thread):
         """
         if eval_model is None:
             eval_model = self.model
+        eval_model = eval_model.to(device)
         eval_model.eval()
         loss = 0
         acc = 0
         with torch.no_grad():
             for x, y in self.test_dataloader:
-
+                x = x.to(device)
+                y = y.to(device)
                 outputs = eval_model(x)
                 loss += self.criterion(outputs, y).item()
                 preds = outputs.argmax(dim=1, keepdim=True)

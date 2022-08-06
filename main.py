@@ -14,7 +14,7 @@ def main():
 
     fed_config = {"C": 0.8, # percentage of clients to pick (floored)
                   "K": 3, # clients overall
-                  "R": 15, # rounds of training TODO:CHANGE TO 15
+                  "R": 7, # rounds of training TODO:CHANGE TO 15
                   "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
@@ -63,10 +63,11 @@ def main():
     for client in clients: client.start()
 
     server.join()
+    time.sleep(3)
     with lock:
-        with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
+        with open(os.path.join(SAVE_PATH, "configuration.txt"), 'a') as f:
             dur = time.time()-start
-            f.write(f"\n\nDuration: {int(dur//60)} minutes {round(dur%60)} seconds")
+            f.write(f"Duration: {int(dur//60)} minutes {round(dur%60)} seconds\n")
     print("Finished!")
 
 

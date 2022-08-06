@@ -15,7 +15,7 @@ TIME_STAMP = f"{time.localtime().tm_year}.{time.localtime().tm_mon}.{time.localt
 SAVE_PATH = os.path.join(os.getcwd(), "results", "single_learner_" + TIME_STAMP)
 os.mkdir(SAVE_PATH)
 
-DATA_NAME = "CIFAR10"
+DATA_NAME = "CIFAR100"
 EPOCHS = 50
 BATCH_SIZE = 64
 LR = 0.01
@@ -120,7 +120,9 @@ with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
 
     f.write(f"\n\nResults: \n\n")
     f.write(f"Accs: {accs}\n")
+    f.write(f"Accs[-1]: {accs[-1]}\n")
     f.write(f"Losses: {losses}\n")
+    f.write(f"Losses[-1]: {losses[-1]}")
 
 fig, ax = plt.subplots()
 ax.plot(np.arange(1, EPOCHS+1, dtype="int32"), losses)

@@ -1,5 +1,5 @@
 import os
-
+import time
 import torch
 from collections import Counter
 import pickle
@@ -8,7 +8,7 @@ import copy
 from socket import socket, AF_INET, SOCK_STREAM
 import matplotlib.pyplot as plt
 import numpy as np
-from config import SERVER_HOST, SERVER_PORT, SAVE_PATH
+from config import SERVER_HOST, SERVER_PORT, SAVE_PATH, device
 from utils import get_data_by_indices
 from threading import Thread
 import logging
@@ -232,12 +232,16 @@ class Client(Thread):
         """
         self.logger.debug(f"Start training...")
 
+        self.model = self.model.to(device)
         self.model.train()
 
         optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
         for epoch in range(self.epochs):
+            start = time.time()
             self.logger.debug(f"Epoch {epoch+1}/{self.epochs}...")
             for x, y in self.dataloader:
+                x = x.to(device)
+                y = y.to(device)
                 optimizer.zero_grad()
 
                 outputs = self.model(x)
@@ -248,7 +252,7 @@ class Client(Thread):
             loss, acc = self.evaluate()
             self.losses.append(loss)
             self.accs.append(acc)
-            self.logger.info(f"Epoch {epoch+1}/{self.epochs} completed: loss: {loss}, accuracy: {acc}.")
+            self.logger.info(f"Epoch {epoch+1}/{self.epochs} completed ({int(time.time()-start)} sec): loss: {loss:.3f}, accuracy: {acc:.3f}.")
         if self.ternary:
             backup_w = self.model.state_dict().copy()
             ter_avg = self.quantize_client(backup_w)
@@ -301,15 +305,18 @@ class Client(Thread):
         """
         if eval_model is None:
             eval_model = self.model
+
+        eval_model = eval_model.to(device)
         eval_model.eval()
 
-        self.model.eval()
         loss = 0
         acc = 0
 
         with torch.no_grad():
             for x, y in self.dataloader:
-                outputs = self.model(x)
+                x = x.to(device)
+                y = y.to(device)
+                outputs = eval_model(x)
                 loss += self.criterion(outputs, y).item()
                 preds = outputs.argmax(dim=1, keepdim=True)
                 acc += (preds == y.view_as(preds)).sum().item()
