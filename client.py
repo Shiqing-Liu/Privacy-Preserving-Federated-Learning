@@ -165,6 +165,7 @@ class Client(Thread):
         ax2 = ax.twinx()
         plt.ylabel('Accuracy')
         ax2.plot(self.accs)
+        ax2.set_ylim([-0.05, 1.05])
 
         ax.grid()
         plt.title(f"{self.name} performance")

@@ -90,6 +90,7 @@ class Server(Thread):
         ax.set_ylabel('Loss')
         ax2 = ax.twinx()
         ax2.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs)
+        ax2.set_ylim([-0.05, 1.05])
         plt.ylabel('Accuracy')
         plt.title(f"Server Performance")
         ax.grid()

@@ -5,12 +5,18 @@ from models import *
 import matplotlib.pyplot as plt
 import numpy as np
 
+# M1 GPU support
+print(f"Is MPS (Metal Performance Shader) built? {torch.backends.mps.is_built()}")
+print(f"Is MPS available? {torch.backends.mps.is_available()}")
+device = "mps" if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {device}")
+
 TIME_STAMP = f"{time.localtime().tm_year}.{time.localtime().tm_mon}.{time.localtime().tm_mday}_{time.localtime().tm_hour}.{time.localtime().tm_min}"
 SAVE_PATH = os.path.join(os.getcwd(), "results", "single_learner_" + TIME_STAMP)
 os.mkdir(SAVE_PATH)
 
 DATA_NAME = "CIFAR100"
-EPOCHS = 20
+EPOCHS = 10
 BATCH_SIZE = 64
 LR = 0.01
 NUM_TRAIN_DATA = 1000
@@ -26,6 +32,7 @@ elif DATA_NAME == "CIFAR10":
     model = Net_4(10)
 else:
     raise AssertionError("No fitting model found. Check your parameters!")
+model = model.to(device)
 
 # Get data
 if DATA_NAME == "CIFAR10":  # 10 classes
@@ -65,17 +72,21 @@ for epoch in range(EPOCHS):
     print(f"Epoch {epoch + 1}/{EPOCHS}...", end="")
     model.train()
     for x, y in train_dataloader:
+        x = x.to(device)
+        y = y.to(device)
         optimizer.zero_grad()
 
         outputs = model(x)
         loss = criterion(outputs, y)
         loss.backward()
         optimizer.step()
-
+    print(f"\rEpoch {epoch + 1}/{EPOCHS} completed...", end="")
     model.eval()
     loss, acc = 0, 0
     with torch.no_grad():
         for x, y in test_dataloader:
+            x = x.to(device)
+            y = y.to(device)
             outputs = model(x)
             loss += criterion(outputs, y).item()
             preds = outputs.argmax(dim=1, keepdim=True)
@@ -109,10 +120,11 @@ ax.set_xticks(np.arange(1, EPOCHS + 1, dtype="int32"))
 ax.set_ylabel('Loss')
 ax2 = ax.twinx()
 ax2.plot(np.arange(1, EPOCHS+1, dtype="int32"), accs)
+ax2.set_ylim([-0.05, 1.05])
 plt.ylabel('Accuracy')
 
 
-plt.title(f"Server Performance")
+plt.title(f"Single Learner Performance")
 ax.grid()
 ax.legend(["Accuracy", "Loss"])
 fig.savefig(os.path.join(SAVE_PATH, "performance.png"))
