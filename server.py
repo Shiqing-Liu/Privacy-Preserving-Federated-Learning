@@ -85,13 +85,13 @@ class Server(Thread):
 
         # Plot performance
         fig, ax = plt.subplots()
-        ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.losses)
+        ax.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.losses, color='blue')
         ax.set_xticks(np.arange(1, self.num_rounds + 1, dtype="int32"))
         ax.set_ylabel('Loss')
         ax2 = ax.twinx()
-        ax2.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs)
+        ax2.plot(np.arange(1, self.num_rounds+1, dtype="int32"), self.accs, color='orange')
         ax2.set_ylim([-0.05, 1.05])
-        plt.ylabel('Accuracy')
+        ax2.set_ylabel('Accuracy')
         plt.title(f"Server Performance")
         ax.grid()
         ax.legend(["Accuracy", "Loss"])
