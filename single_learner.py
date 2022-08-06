@@ -15,11 +15,11 @@ TIME_STAMP = f"{time.localtime().tm_year}.{time.localtime().tm_mon}.{time.localt
 SAVE_PATH = os.path.join(os.getcwd(), "results", "single_learner_" + TIME_STAMP)
 os.mkdir(SAVE_PATH)
 
-DATA_NAME = "CIFAR100"
-EPOCHS = 10
+DATA_NAME = "CIFAR10"
+EPOCHS = 50
 BATCH_SIZE = 64
 LR = 0.01
-NUM_TRAIN_DATA = 1000
+NUM_TRAIN_DATA = 10000
 NUM_TEST_DATA = 1000
 start = time.time()
 
@@ -71,6 +71,7 @@ optimizer = optimizer(model.parameters(), lr=LR)
 for epoch in range(EPOCHS):
     print(f"Epoch {epoch + 1}/{EPOCHS}...", end="")
     model.train()
+    loss, acc = 0, 0
     for x, y in train_dataloader:
         x = x.to(device)
         y = y.to(device)
@@ -80,23 +81,30 @@ for epoch in range(EPOCHS):
         loss = criterion(outputs, y)
         loss.backward()
         optimizer.step()
-    print(f"\rEpoch {epoch + 1}/{EPOCHS} completed...", end="")
+
+        loss += loss.item()
+        preds = outputs.argmax(dim=1, keepdim=True)
+        acc += (preds == y.view_as(preds)).sum().item()
+    loss = loss / len(train_dataloader)
+    acc = acc / len(train_data)
+
+    print(f"\rEpoch {epoch + 1}/{EPOCHS} completed: train_loss: {loss:.3f} | train_acc: {acc:.3f} | ...", end="")
     model.eval()
-    loss, acc = 0, 0
+    tloss, tacc = 0, 0
     with torch.no_grad():
         for x, y in test_dataloader:
             x = x.to(device)
             y = y.to(device)
             outputs = model(x)
-            loss += criterion(outputs, y).item()
+            tloss += criterion(outputs, y).item()
             preds = outputs.argmax(dim=1, keepdim=True)
-            acc += (preds == y.view_as(preds)).sum().item()
-    loss = loss / len(test_dataloader)
-    acc = acc / len(test_data)
+            tacc += (preds == y.view_as(preds)).sum().item()
+    tloss = tloss / len(test_dataloader)
+    tacc = tacc / len(test_data)
 
-    losses.append(loss)
-    accs.append(acc)
-    print(f"\rEpoch {epoch + 1}/{EPOCHS} completed: loss: {loss}, accuracy: {acc}.")
+    losses.append(tloss)
+    accs.append(tacc)
+    print(f"\rEpoch {epoch + 1}/{EPOCHS} completed: train_loss: {loss:.3f} | train_acc: {acc:.3f} | loss: {tloss:.3f} | acc: {tacc:.3f}.")
 
 with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
     f.write(f"The following training was conducted:\n\n")
