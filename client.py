@@ -158,10 +158,14 @@ class Client(Thread):
 
         # Plot performance
         fig, ax = plt.subplots()
-        ax.plot(self.accs)
         ax.plot(self.losses)
         ax.set_xticklabels(np.arange(1, self.epochs + 1, dtype="int32").tolist() * int(len(self.accs)/self.epochs))
         ax.set_xticks(np.arange(0, len(self.accs)))
+        ax.set_ylabel('Loss')
+        ax2 = ax.twinx()
+        plt.ylabel('Accuracy')
+        ax2.plot(self.accs)
+
         ax.grid()
         plt.title(f"{self.name} performance")
         ax.legend(["Accuracy", "Loss"])

@@ -104,9 +104,14 @@ with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
     f.write(f"Losses: {losses}\n")
 
 fig, ax = plt.subplots()
-ax.plot(np.arange(1, EPOCHS+1, dtype="int32"), accs)
 ax.plot(np.arange(1, EPOCHS+1, dtype="int32"), losses)
 ax.set_xticks(np.arange(1, EPOCHS + 1, dtype="int32"))
+ax.set_ylabel('Loss')
+ax2 = ax.twinx()
+ax2.plot(np.arange(1, EPOCHS+1, dtype="int32"), accs)
+plt.ylabel('Accuracy')
+
+
 plt.title(f"Server Performance")
 ax.grid()
 ax.legend(["Accuracy", "Loss"])
