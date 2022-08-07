@@ -61,7 +61,11 @@ def split_data_by_indices(data, n, iid=True, shards_each=2):
         n_shards = n * shards_each
         shard_len = int(np.floor(data_size / n_shards))
 
-        sorted_indices = torch.argsort(data.targets).numpy()[:(n_shards * shard_len)]
+        indices = torch.randperm(len(data)).numpy()[:(n_shards * shard_len)]
+        targets = torch.Tensor(data.targets)
+        ind_targets = targets[indices]
+
+        sorted_indices = np.array([x for _, x in sorted(zip(ind_targets, indices))])
         shards = np.split(sorted_indices, n_shards)
 
         random_shards = torch.randperm(n_shards)

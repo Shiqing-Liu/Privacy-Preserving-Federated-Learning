@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.DEBUG,
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 class Server(Thread):
-    def __init__(self, model, fed_config, host, port):
+    def __init__(self, model, fed_config, host, port, lock):
         Thread.__init__(self)
         # Setting all required configurations
         self.fraction = fed_config["C"]
@@ -57,6 +57,7 @@ class Server(Thread):
 
         self.host = host
         self.port = port
+        self.lock = lock
 
     def run(self):
         '''
@@ -64,7 +65,8 @@ class Server(Thread):
         the functions speak for themselves)
         '''
         # Setup Socket
-        self.sock = self.setup_socket(self.host, self.port)
+        with self.lock:
+            self.sock = self.setup_socket(self.host, self.port)
 
         # Start the server
         self.connect_clients()

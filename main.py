@@ -21,9 +21,9 @@ def main():
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
                   "data_name": "CIFAR100",
-                  "iid": True,
+                  "iid": False,
                   "shards_each": 2,
-                  "ternary": False,
+                  "ternary": True,
                   "personalized": False}
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
@@ -41,10 +41,9 @@ def main():
     else:
         raise AssertionError("No fitting model found. Check your parameters!")
 
-
-    server = Server(model, fed_config, SERVER_HOST, SERVER_PORT)
-    clients = []
     lock = Lock()
+    server = Server(model, fed_config, SERVER_HOST, SERVER_PORT, lock)
+    clients = []
     for i in range(fed_config["K"]):
         time.sleep(3)
         clients.append(Client(f"Client_{i + 1}", SERVER_HOST, SERVER_PORT, lock))
