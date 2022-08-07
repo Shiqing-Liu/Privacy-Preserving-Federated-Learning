@@ -5,9 +5,9 @@ from torchvision import transforms
 from sklearn.model_selection import train_test_split
 
 
-LESS_DATA = 100 # Int, >0 if less data should be used, otherwise 0
-SERVER_TEST_SIZE = 100 #* 10
-SERVER_TRAIN_SIZE = 100 #* 10
+LESS_DATA = 10000 # Int, >0 if less data should be used, otherwise 0
+SERVER_TEST_SIZE = 1000 #* 10
+SERVER_TRAIN_SIZE = 1000 #* 10
 
 
 def get_data_by_indices(name, train, indices):
