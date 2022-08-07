@@ -24,7 +24,7 @@ def main():
                   "iid": False,
                   "shards_each": 2,
                   "ternary": True,
-                  "personalized": False}
+                  "personalized": True}
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_3(), fed_config)
