@@ -21,7 +21,7 @@ def main():
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
                   "data_name": "CIFAR100",
-                  "iid": False,
+                  "iid": True,
                   "shards_each": 2,
                   "ternary": True,
                   "personalized": True}
