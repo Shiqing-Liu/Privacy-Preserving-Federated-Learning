@@ -1,0 +1,7 @@
+,dataset,clients,c,datasize (clients),ternary,personalized,iid,acc (server),acc (c1),acc (c2),acc (c3)
+0,CIFAR10,3.0,0.8,10000,True,False,False,0.199,0.72,0.424,0.464
+1,CIFAR100,3.0,0.8,10000,True,False,False,0.014,0.2,0.153,0.195
+2,CIFAR100,3.0,0.8,10000,False,True,True,0.01,0.015,0.014,0.008
+3,CIFAR10,3.0,0.8,10000,False,True,True,0.092,0.309,0.293,0.364
+4,CIFAR10,,,10000,True,True,True,0.337,,,
+5,CIFAR100,,,10000,True,True,True,0.019,,,
