@@ -12,6 +12,6 @@ print(f"Is MPS available? {torch.backends.mps.is_available()}")
 device="cpu"
 print(f"Using device: {device}")
 
-SERVER_HOST = ""
+SERVER_HOST = "localhost"
 SERVER_PORT = 9999
 

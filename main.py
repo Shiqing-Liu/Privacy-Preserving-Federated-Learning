@@ -20,11 +20,11 @@ def main():
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
-                  "data_name": "CIFAR100",
+                  "data_name": "CIFAR10",
                   "iid": True,
                   "shards_each": 2,
-                  "ternary": True,
-                  "personalized": True}
+                  "ternary": False,
+                  "personalized": False}
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_3(), fed_config)
