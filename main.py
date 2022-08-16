@@ -21,10 +21,10 @@ def main():
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
                   "data_name": "CIFAR10",
-                  "iid": True,
+                  "iid": False,
                   "shards_each": 2,
                   "ternary": False,
-                  "personalized": False}
+                  "personalized": True}
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_3(), fed_config)

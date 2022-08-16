@@ -1,4 +1,4 @@
-The following training was conducted:
+0.0The following training was conducted:
 
 C: 0.8
 K: 3

@@ -1,13 +1,23 @@
-R | Dataset | Clients | Ternary | Personalized | IID
-F | Cifar100 - Single Lerner
-H | Cifar100 | 3 |  No | No | No
-L | Cifar100 | 3 |  No | No | Yes
-F | Cifar100 | 3 |  Yes | No | No
-H | Cifar100 | 3 |  Yes | No | Yes
-L | Cifar100 | 3 |  No | Yes | No
-F | Cifar100 | 3 |  No | Yes | Yes
-H | Cifar100 | 3 |  Yes | Yes | No
-L | Cifar100 | 3 |  Yes | Yes | Yes
+# | R | Dataset | Clients | Ternary | Personalized | IID
+0 | F | Cifar100 - Single Lerner
+1 | H | Cifar100 | 3 |  No | No | No
+2 | L | Cifar100 | 3 |  No | No | Yes
+3 | F | Cifar100 | 3 |  Yes | No | No
+4 | H | Cifar100 | 3 |  Yes | No | Yes
+5 | L | Cifar100 | 3 |  No | Yes | No
+6 | F | Cifar100 | 3 |  No | Yes | Yes
+7 | H | Cifar100 | 3 |  Yes | Yes | No
+8 | L | Cifar100 | 3 |  Yes | Yes | Yes
+
+10 | F | Cifar10 - Single Lerner
+11 | H | Cifar10 | 3 |  No | No | No
+12 | L | Cifar10 | 3 |  No | No | Yes
+13| F | Cifar10 | 3 |  Yes | No | No
+14| H | Cifar10 | 3 |  Yes | No | Yes
+15| L | Cifar10 | 3 |  No | Yes | No
+16| F | Cifar10 | 3 |  No | Yes | Yes
+17| H | Cifar10 | 3 |  Yes | Yes | No
+18| L | Cifar10 | 3 |  Yes | Yes | Yes
 
 
 TO DO:
