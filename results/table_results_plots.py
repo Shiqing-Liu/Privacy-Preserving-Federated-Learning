@@ -16,18 +16,33 @@ df.loc[94] = [0,"CIFAR10",np.nan,np.nan,10000,"True","True","single_learner",0.3
 df.loc[95] = [0,"CIFAR10",np.nan,np.nan,10000,"True","False","single_learner",0.337,0,0,0,True]
 df.loc[96] = [0,"CIFAR10",np.nan,np.nan,10000,"False","True","single_learner",0.337,0,0,0,True]
 df.loc[97] = [0,"CIFAR10",np.nan,np.nan,10000,"False","False","single_learner",0.337,0,0,0,True]
+for col in ["ternary", "personalized", "iid"]: df[col] = [eval(x) if x!="single_learner" else x for x in df[col]]
+
+fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
+palette = {True:"blue", False:"orange", "single_learner":"black"}
+
+sub = df[(df.ternary==True) & (df.personalized==True)]
+sns.lineplot(data=sub, x="dataset", y="acc (server)", hue="iid", palette=palette, ax=ax1)
+ax1.set_title("Ternray=True | Person.=True")
+
+sub = df[(df.ternary==True) & (df.personalized==False)]
+sns.lineplot(data=sub, x="dataset", y="acc (server)", hue="iid", palette=palette, ax=ax2)
+ax2.set_title("Ternray=True | Person.=False")
+
+sub = df[(df.ternary==False) & (df.personalized==True)]
+sns.lineplot(data=sub, x="dataset", y="acc (server)", hue="iid", palette=palette, ax=ax3)
+ax3.set_title("Ternray=False | Person.=True")
+
+sub = df[(df.ternary==False) & (df.personalized==False)]
+sns.lineplot(data=sub, x="dataset", y="acc (server)", hue="iid", palette=palette, ax=ax4)
+ax4.set_title("Ternray=False | Person.=False")
 
 
-g = sns.FacetGrid(df, col="personalized", row="ternary", hue="iid")#, height=2.5, aspect=2.5)
-g.map(sns.lineplot, "dataset", "acc (server)")
-g.set(ylim=(-0.1, 1), xlabel="Dataset", ylabel="Acc (Server)")
-g.fig.suptitle("", fontsize=20)
-g.fig.subplots_adjust(top=0.92, hspace=0.2)
-g.add_legend()
-g.legend.set_title("")
-for ax in g.axes.flat:
-    continue
+for ax in [ax1, ax2, ax3, ax4]:
+    ax.set_ylim(-0.1, 1)
+ax1.legend()
 plt.show()
+
 fig, ax = plt.subplots()
 ax = sns.lineplot(data=df_single, x="dataset", y="acc (server)")
 ax.set_ylim(-0.1, 1)
