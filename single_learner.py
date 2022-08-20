@@ -3,6 +3,7 @@ from torchvision import transforms
 import os, time
 from models import *
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 
 # M1 GPU support
@@ -15,8 +16,8 @@ TIME_STAMP = f"{time.localtime().tm_year}.{time.localtime().tm_mon}.{time.localt
 SAVE_PATH = os.path.join(os.getcwd(), "results", "single_learner_" + TIME_STAMP)
 os.mkdir(SAVE_PATH)
 
-DATA_NAME = "CIFAR100"
-EPOCHS = 50
+DATA_NAME = "CIFAR10"
+EPOCHS = 100
 BATCH_SIZE = 64
 LR = 0.01
 NUM_TRAIN_DATA = 10000
@@ -124,17 +125,22 @@ with open(os.path.join(SAVE_PATH, "configuration.txt"), 'w') as f:
     f.write(f"Losses: {losses}\n")
     f.write(f"Losses[-1]: {losses[-1]}")
 
+# Plot performance
 fig, ax = plt.subplots()
 ax.plot(np.arange(1, EPOCHS+1, dtype="int32"), losses, color='blue')
-ax.set_xticks(np.arange(1, EPOCHS + 1, dtype="int32"))
+ax.set_xlabel("Epoch")
 ax.set_ylabel('Loss')
+ax.legend(["Loss"])
+ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
 ax2 = ax.twinx()
 ax2.plot(np.arange(1, EPOCHS+1, dtype="int32"), accs, color='orange')
-ax2.set_ylim([-0.05, 1.05])
 ax2.set_ylabel('Accuracy')
-plt.title(f"Single Learner Performance")
+ax2.set_ylim([-0.05, 1.05])
+ax2.legend(["Accuracy"])
 ax.grid()
-ax.legend(["Accuracy", "Loss"])
+
+plt.title(f"Single Learner Performance")
 fig.savefig(os.path.join(SAVE_PATH, "performance.png"))
 
 

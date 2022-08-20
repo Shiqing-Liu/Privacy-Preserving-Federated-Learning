@@ -272,7 +272,7 @@ class Client(Thread):
                 d2 = kernel.size(0) * kernel.size(1)
                 delta = 0.05 * kernel.abs().sum() / d2
                 tmp1 = (kernel.abs() > delta).sum()
-                tmp2 = ((kernel.abs() > delta) * kernel.abs()).sum()
+                tmp2 = ((kernel.abs() > delta) * kernel.abs()).sum() # TODO: line does not support GPU
                 w_p = tmp2 / tmp1
                 a = (kernel > delta).float()
                 b = (kernel < -delta).float()
