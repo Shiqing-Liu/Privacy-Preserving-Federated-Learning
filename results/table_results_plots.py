@@ -18,7 +18,7 @@ df.loc[96] = [0,"CIFAR10",np.nan,np.nan,10000,"False","True","single_learner",0.
 df.loc[97] = [0,"CIFAR10",np.nan,np.nan,10000,"False","False","single_learner",0.337,0,0,0,True]
 for col in ["ternary", "personalized", "iid"]: df[col] = [eval(x) if x!="single_learner" else x for x in df[col]]
 
-fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2)
+fig, [[ax1, ax2], [ax3, ax4]] = plt.subplots(nrows=2, ncols=2, constrained_layout=True)
 palette = {True:"blue", False:"orange", "single_learner":"black"}
 
 sub = df[(df.ternary==True) & (df.personalized==True)]
@@ -44,6 +44,7 @@ ax1.legend()
 plt.show()
 
 fig, ax = plt.subplots()
+fig.suptitle("Single learner")
 ax = sns.lineplot(data=df_single, x="dataset", y="acc (server)")
 ax.set_ylim(-0.1, 1)
 plt.show()
