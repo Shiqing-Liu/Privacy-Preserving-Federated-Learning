@@ -19,19 +19,3 @@
 17 | H | Cifar10 | 3 |  Yes | Yes | No
 18 | L | Cifar10 | 3 |  Yes | Yes | Yes
 
-
-TO DO:
-Save intermediate data:
- - Data distribution at beginning
- - Results (Bytes send, received, accuracy, loss, number of times each strategy was chosen)
-
- -> Fabian
-
-
-Implement config via ABSL? -> Check Louis
-Check plots for client + check why transmitted data isn't properly working -> Louis
-
-
-Plots for accuracy, second y axis -> Hela
-
-Comments -> Check yourself

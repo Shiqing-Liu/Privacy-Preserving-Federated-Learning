@@ -41,8 +41,7 @@ ax4.set_title("Ternray=False | Person.=False")
 for ax in [ax1, ax2, ax3, ax4]:
     ax.set_ylim(-0.1, 1)
 ax1.legend()
-plt.show()
-
+fig.savefig("results/table_results_plot.png")
 fig, ax = plt.subplots()
 fig.suptitle("Single learner")
 ax = sns.lineplot(data=df_single, x="dataset", y="acc (server)")

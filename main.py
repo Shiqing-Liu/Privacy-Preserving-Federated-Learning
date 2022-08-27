@@ -20,15 +20,15 @@ def main():
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
-                  "data_name": "CIFAR10",
+                  "data_name": "MNIST",
                   "shards_each": 2,
-                  "ternary": False,
+                  "ternary": True,
                   "personalized": True,
-                  "iid": False
+                  "iid": True
                   }
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
-        model = Quantized_CNN(Net_3(), fed_config)
+        model = Quantized_CNN(Net_2(), fed_config)
     elif fed_config["data_name"] == "MNIST":
         model = Net_2()
     elif fed_config["ternary"] and fed_config["data_name"] == "CIFAR100":
@@ -63,13 +63,11 @@ def main():
     for client in clients: client.start()
 
     server.join()
-    time.sleep(3)
     with lock:
         with open(os.path.join(SAVE_PATH, "configuration.txt"), 'a') as f:
             dur = time.time()-start
             f.write(f"Duration: {int(dur//60)} minutes {round(dur%60)} seconds\n")
     print("Finished!")
-
 
 if __name__ == '__main__':
     main()
