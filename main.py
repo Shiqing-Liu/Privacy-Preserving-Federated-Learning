@@ -28,7 +28,7 @@ def main():
                   }
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
-        model = Quantized_CNN(Net_2(), fed_config)
+        model = Quantized_CNN(Net_2_Q(), fed_config)
     elif fed_config["data_name"] == "MNIST":
         model = Net_2()
     elif fed_config["ternary"] and fed_config["data_name"] == "CIFAR100":

@@ -77,6 +77,36 @@ class Net_4(nn.Module):
         return x
 
 
+class Net_2_Q(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fp_conv1 = nn.Sequential(OrderedDict([
+            ("conv0", nn.Conv2d(
+                in_channels=1,
+                out_channels=16,
+                kernel_size=5,
+                stride=1,
+                padding=2,
+                bias=False
+            )),
+            ("relu0", nn.ReLU(inplace=True)),
+            ("pool0", nn.MaxPool2d(kernel_size=2))
+        ]))
+        self.ternary_con2 = nn.Sequential(OrderedDict([
+            ('conv1', nn.Conv2d(16, 32, 5,1,2, bias=False)),
+            ('relu1', nn.ReLU(inplace=True)),
+            ("pool1", nn.MaxPool2d(2))
+        ]))
+        self.fp_fc = nn.Sequential(OrderedDict([
+            ("fp_fc1", nn.Linear(32 * 7 * 7, 10))]))
+
+    def forward(self, x):
+        x = self.fp_conv1(x)
+        x = self.ternary_con2(x)
+        x = x.view(x.size(0), -1)
+        x = self.fp_fc(x)
+        # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
+        return x
 
 def Quantized_CNN(pre_model, conf):
     """
