@@ -114,8 +114,8 @@ class Client(Thread):
                     self.send(self.model.state_dict())
 
                     # personalized weights get their values again
-                    last_weights = self.personalized_weight[-1]
-                    self.model.state_dict().update(last_weights)
+                    #last_weights = self.personalized_weight[-1]
+                    #self.model.state_dict().update(last_weights)
 
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Skip":
@@ -146,8 +146,8 @@ class Client(Thread):
                     self.send(self.model.state_dict())
 
                     # personalized weights get their values again
-                    last_weights = self.personalized_weight[-1]
-                    self.model.state_dict().update(last_weights)
+                    #last_weights = self.personalized_weight[-1]
+                    #self.model.state_dict().update(last_weights)
                 else:
                     self.send(self.model.state_dict())
 

@@ -14,7 +14,7 @@ def main():
 
     fed_config = {"C": 0.8, # percentage of clients to pick (floored)
                   "K": 3, # clients overall
-                  "R": 50, # rounds of training TODO:CHANGE TO 15
+                  "R": 5, # rounds of training TODO:CHANGE TO 15
                   "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
@@ -24,7 +24,7 @@ def main():
                   "shards_each": 2,
                   "ternary": True,
                   "personalized": True,
-                  "iid": True
+                  "iid": False
                   }
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
