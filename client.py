@@ -78,6 +78,9 @@ class Client(Thread):
                 model = self.receive()
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Model-- Server")
+
+
+
                 # list of keys to acess the weights of last layer
                 list_keys_weights = list(self.model.state_dict().keys())
 
@@ -89,6 +92,7 @@ class Client(Thread):
                     if len(self.personalized_weight) == 0:         #first time the client recieves data from the server
                         self.update()
                     else:
+
                         self.model.state_dict().update(self.personalized_weight[-1])    #the client gets the last saved values of the last layer's wights again so the weights of the last layer received from the server don't matter
                         self.update()
 
@@ -119,35 +123,38 @@ class Client(Thread):
 
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Skip":
+
                 if self.personalized:
-                    # list of keys to acess the weights of last layer
-                    list_keys_weights = list(self.model.state_dict().keys())
-                    # weights + bias of last layer after the update
-                    personalized_weights = {list_keys_weights[k]: self.model.state_dict()[list_keys_weights[k]] for k in
-                                            (-2, -1)}
-                    self.personalized_weight.append(personalized_weights)
+                    if len(self.signals) > 1:
+                        if (self.signals[-2] == "Update") or (self.signals[-2] == "Skip"):
+                            self.send(self.model.state_dict())
+                    else:
+                        # list of keys to access the weights of last layer
+                        list_keys_weights = list(self.model.state_dict().keys())
+                        # weights + bias of last layer after the update
+                        personalized_weights = {list_keys_weights[k]: self.model.state_dict()[list_keys_weights[k]] for k in (-2, -1)}
+                        self.personalized_weight.append(personalized_weights)
 
-                    # replace last layer's weights and bias with random numbers before sending them to the server
-                    fc_weight_to_np = self.model.state_dict()[list_keys_weights[-2]].cpu().detach().numpy()
-                    fc_bias_to_np = self.model.state_dict()[list_keys_weights[-1]].cpu().detach().numpy()
-                    for index in np.ndindex(fc_bias_to_np.shape):
-                        fc_bias_to_np[index] = random()
-                    fc_bias_to_tensor = torch.from_numpy(fc_bias_to_np)
+                        # replace last layer's weights and bias with random numbers before sending them to the server
+                        fc_weight_to_np = self.model.state_dict()[list_keys_weights[-2]].cpu().detach().numpy()
+                        fc_bias_to_np = self.model.state_dict()[list_keys_weights[-1]].cpu().detach().numpy()
+                        for index in np.ndindex(fc_bias_to_np.shape):
+                            fc_bias_to_np[index] = random()
+                        fc_bias_to_tensor = torch.from_numpy(fc_bias_to_np)
 
-                    for index in np.ndindex(fc_weight_to_np.shape):
-                        fc_weight_to_np[index] = random()
-                    fc_weight_to_tensor = torch.from_numpy(fc_weight_to_np)
+                        for index in np.ndindex(fc_weight_to_np.shape):
+                            fc_weight_to_np[index] = random()
+                        fc_weight_to_tensor = torch.from_numpy(fc_weight_to_np)
 
-                    last_layer_to_be_sent = {list_keys_weights[-2]: fc_weight_to_tensor,
-                                            list_keys_weights[-1]: fc_bias_to_tensor}
-                    self.model.state_dict().update(last_layer_to_be_sent)
+                        last_layer_to_be_sent = {list_keys_weights[-2]: fc_weight_to_tensor, list_keys_weights[-1]: fc_bias_to_tensor}
+                        self.model.state_dict().update(last_layer_to_be_sent)
 
-                    # send weights to the server
-                    self.send(self.model.state_dict())
+                        # send weights to the server
+                        self.send(self.model.state_dict())
 
-                    # personalized weights get their values again
-                    #last_weights = self.personalized_weight[-1]
-                    #self.model.state_dict().update(last_weights)
+                        # personalized weights get their values again
+                        # last_weights = self.personalized_weight[-1]
+                        # self.model.state_dict().update(last_weights)
                 else:
                     self.send(self.model.state_dict())
 
