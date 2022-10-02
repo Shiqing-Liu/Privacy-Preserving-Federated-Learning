@@ -32,6 +32,7 @@ class Client(Thread):
         self.strategy_history = []
         self.accs = []
         self.losses = []
+        self.training_acc_loss = []
         self.signals = []
         self.personalized_weight = []
         self.lock = lock
@@ -97,12 +98,12 @@ class Client(Thread):
                         self.update()
 
                     # weights + bias of last layer after the update
-                    personalized_weights = {list_keys_weights[k]: self.model.state_dict()[list_keys_weights[k]] for k in (-2,-1)}
+                    personalized_weights = {list_keys_weights[k]: self.model.state_dict()[list_keys_weights[k]].clone() for k in (-2,-1)}
                     self.personalized_weight.append(personalized_weights)
 
                     #replace last layer's weights and bias with random numbers before sending them to the server
-                    fc_weight_to_np = self.model.state_dict()[list_keys_weights[-2]].cpu().detach().numpy()
-                    fc_bias_to_np = self.model.state_dict()[list_keys_weights[-1]].cpu().detach().numpy()
+                    fc_weight_to_np = self.model.state_dict()[list_keys_weights[-2]].clone().numpy()
+                    fc_bias_to_np = self.model.state_dict()[list_keys_weights[-1]].clone().numpy()
                     for index in np.ndindex(fc_bias_to_np.shape):
                         fc_bias_to_np[index] = random()
                     fc_bias_to_tensor = torch.from_numpy(fc_bias_to_np)
@@ -158,11 +159,16 @@ class Client(Thread):
                 else:
                     self.send(self.model.state_dict())
 
+                self.training_acc_loss.append([])
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
                 model = self.receive()
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Complete model-- Server")
+
+            loss, acc = self.evaluate()
+            self.accs.append(acc)
+            self.losses.append(loss)
         self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
 
         # Plot performance
@@ -190,6 +196,7 @@ class Client(Thread):
                 f.write(f"Data distribution: {self.class_distribution()}\n")
                 f.write(f"Accuracy: {self.accs}\n")
                 f.write(f"Loss: {self.losses}\n")
+                f.write(f"Training acc & loss: {self.training_acc_loss}\n")
                 f.write(f"Received data: {self.received_data}\n")
                 f.write(f"Send data: {self.send_data}\n")
                 f.write(f"Strategies (if used): {self.strategy_history}\n\n\n")
@@ -246,6 +253,7 @@ class Client(Thread):
         self.model = self.model.to(device)
         self.model.train()
 
+        temp_performance = []
         optimizer = self.optimizer(self.model.parameters(), lr=self.learning_rate)
         for epoch in range(self.epochs):
             start = time.time()
@@ -261,8 +269,8 @@ class Client(Thread):
                 optimizer.step()
 
             loss, acc = self.evaluate()
-            self.losses.append(loss)
-            self.accs.append(acc)
+            temp_performance.append([loss, acc])
+
             self.logger.info(f"Epoch {epoch+1}/{self.epochs} completed ({int(time.time()-start)} sec): loss: {loss:.3f}, accuracy: {acc:.3f}.")
         if self.ternary:
             backup_w = self.model.state_dict().copy()
@@ -270,6 +278,7 @@ class Client(Thread):
             w, flag = self.choose_model(self.model.state_dict(), ter_avg)
             self.strategy_history.append("Strategy 1") if flag else self.strategy_history.append("Strategy 2")
             self.model.load_state_dict(w)
+        self.training_acc_loss.append(temp_performance)
         self.round += 1
         self.logger.info("Finished training!")
 

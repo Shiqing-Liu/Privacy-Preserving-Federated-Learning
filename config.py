@@ -13,6 +13,6 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 device = "cpu"
 print(f"Using device: {device}")
 
-SERVER_HOST = "localhost"
+SERVER_HOST = ""
 SERVER_PORT = 9995
 
