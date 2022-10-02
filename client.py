@@ -159,7 +159,7 @@ class Client(Thread):
                 else:
                     self.send(self.model.state_dict())
 
-                self.training_acc_loss.append([])
+                self.training_acc_loss.append(self.training_acc_loss[-1][-1]*self.epochs)
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
                 model = self.receive()
@@ -174,9 +174,9 @@ class Client(Thread):
         # Plot performance
         fig, ax = plt.subplots()
         ax.plot(list(range(len(self.losses))), self.losses, color='blue')
-        ax.set_xlabel("Local Epochs")
+        ax.set_xlabel("Global Rounds")
         ax.set_ylabel('Loss')
-        ax.legend(["Loss"])
+        ax.legend(["Loss"], loc="center left")
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax.grid()
 
@@ -184,9 +184,28 @@ class Client(Thread):
         ax2.plot(list(range(len(self.losses))), self.accs, color='orange')
         ax2.set_ylabel('Accuracy')
         ax2.set_ylim([-0.05, 1.05])
-        ax2.legend(["Accuracy"])
+        ax2.legend(["Accuracy"], loc="center right")
         plt.title(f"{self.name} performance")
         fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
+
+        tlosses, taccs = list(zip(*[tu for arr in self.training_acc_loss for tu in arr]))
+        # Plot performance
+        fig, ax = plt.subplots()
+        ax.plot(list(range(len(tlosses))), tlosses, color='blue')
+        ax.set_xlabel("Local Epochs")
+        ax.set_xticklabels([""] + self.signals[:-2], rotation=45)
+        ax.set_ylabel('Loss')
+        ax.legend(["Loss"], loc="center left")
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.grid()
+
+        ax2 = ax.twinx()
+        ax2.plot(list(range(len(taccs))), taccs, color='orange')
+        ax2.set_ylabel('Accuracy')
+        ax2.set_ylim([-0.05, 1.05])
+        ax2.legend(["Accuracy"], loc="center right")
+        plt.title(f"{self.name} local performance")
+        fig.savefig(os.path.join(SAVE_PATH, "local_performance_" + self.name + ".png"))
 
         # Save results to file
         with self.lock:
