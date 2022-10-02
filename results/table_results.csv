@@ -1,17 +1,10 @@
-#,dataset,clients,c,datasize (clients),ternary,personalized,iid,acc (server),acc (c1),acc (c2),acc (c3),single
-13,CIFAR10,3.0,0.8,10000,True,False,False,0.199,0.72,0.424,0.464,False
-3,CIFAR100,3.0,0.8,10000,True,False,False,0.014,0.2,0.153,0.195,False
-6,CIFAR100,3.0,0.8,10000,False,True,True,0.01,0.015,0.014,0.008,False
-16,CIFAR10,3.0,0.8,10000,False,True,True,0.092,0.309,0.293,0.364,False
-18,CIFAR10,3,0.8,10000,True,True,True,0.337,0.099,0.101,0.1,False
-8,CIFAR100,3,0.8,10000,True,True,True,0.019,0.039,0.043,0.055,False
-2,CIFAR100,3,0.8,10000,False,False,True,0.073,0.388,0.429,0.417,False
-,CIFAR100,3,0.8,10000,False,False,True,0.01,0.012,0.0129,0.012,False
-12,CIFAR10,3,0.8,10000,False,False,True,0.387,0.562,0.552,0.547,False
-0,CIFAR100,np.nan,np.nan,10000,np.nan,np.nan,np.nan,0.019,0,0,0,True
-10,CIFAR10,np.nan,np.nan,10000,np.nan,np.nan,np.nan,0.337,0,0,0,True
-11,CIFAR10,3,0.8,10000,False,False,False,0.238,0.706,0.619,0.699,False
-14,CIFAR10,3,0.8,10000,True,False,True,0.357,0.497,0.495,0.475,False
-17,CIFAR10,3,0.8,10000,True,True,False,0.1,0.307,0.303,0.299,False
-15,CIFAR10,3,0.8,10000,False,True,False,0.116,0.698,0.600,0.647,False
-
+number,responsible,dataset,clients,c,rounds,datasize (clients),ternary,personalized,iid,acc (server),acc (c1),acc (c2),acc (c3),single
+1,Louis,MNIST,3,0.8,25,10000,False,False,False,,,,,False
+2,Hela,MNIST,3,0.8,25,10000,False,False,True,,,,,False
+3,Fabian,MNIST,3,0.8,25,10000,False,True,False,,,,,False
+4,Louis,MNIST,3,0.8,25,10000,False,True,True,,,,,False
+5,Hela,MNIST,3,0.8,25,10000,True,False,False,,,,,False
+6,Fabian,MNIST,3,0.8,25,10000,True,False,True,,,,,False
+7,Louis,MNIST,3,0.8,25,10000,True,True,False,,,,,False
+8,Hela,MNIST,3,0.8,25,10000,True,True,True,,,,,False
+9,Fabian,MNIST,np.nan,np.nan,25,10000,np.nan,np.nan,np.nan,,,,,True

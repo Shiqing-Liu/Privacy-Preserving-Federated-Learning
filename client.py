@@ -158,8 +158,10 @@ class Client(Thread):
                         # self.model.state_dict().update(last_weights)
                 else:
                     self.send(self.model.state_dict())
-
-                self.training_acc_loss.append(self.training_acc_loss[-1][-1]*self.epochs)
+                if len(self.training_acc_loss) == 0:
+                    self.training_acc_loss.append([np.nan, np.nan]*self.epochs)
+                else:
+                    self.training_acc_loss.append(self.training_acc_loss[-1][-1]*self.epochs)
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
                 model = self.receive()
