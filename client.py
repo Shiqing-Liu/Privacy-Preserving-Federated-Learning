@@ -68,6 +68,7 @@ class Client(Thread):
         self.logger.debug(f"Received model from server.")
 
         self.logger.info("Ready to start!")
+        self.round += 1
         while True:
             signal = self.receive()
             self.signals.append(signal)
@@ -165,12 +166,15 @@ class Client(Thread):
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
                 model = self.receive()
+                self.send_data.append((self.round, 0))
                 self.model.load_state_dict(model)
                 self.logger.debug(f"{self.name} <--Complete model-- Server")
 
             loss, acc = self.evaluate()
             self.accs.append(acc)
             self.losses.append(loss)
+            self.round += 1
+
         self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
         with self.lock:
             # Plot performance
@@ -246,9 +250,14 @@ class Client(Thread):
             fig, ax = plt.subplots()
             ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
             ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
-            plt.xlabel("Rounds")
+            ticks = list(cumsum_send.keys())[:-1]
+            ticks.append("Finish")
+            ticks[0] = "SetUp"
+            print(ticks)
+            ax.set_xticklabels(ticks, rotation="45")
             plt.title(f"{self.name} send/receive")
-            plt.ylabel("Bytesleistung")
+            plt.ylabel("Bytes")
+            plt.xlabel("Global Rounds")
             ax.grid()
             ax.legend(["Received Bytes", "Send Bytes"])
             fig.savefig(os.path.join(SAVE_PATH, "send_and_transmit_" + self.name + ".png"))
@@ -307,7 +316,7 @@ class Client(Thread):
             self.strategy_history.append("Strategy 1") if flag else self.strategy_history.append("Strategy 2")
             self.model.load_state_dict(w)
         self.training_acc_loss.append(temp_performance)
-        self.round += 1
+
         self.logger.info("Finished training!")
 
     def quantize_client(self, model_dict):

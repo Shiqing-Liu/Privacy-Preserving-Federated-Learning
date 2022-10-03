@@ -121,8 +121,12 @@ class Server(Thread):
             fig, ax = plt.subplots()
             ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
             ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
-            plt.xlabel("Rounds")
-            plt.ylabel("Bytesleistung")
+            plt.xlabel("Global Rounds")
+
+            plt.ylabel("Bytes")
+            ticks = list(cumsum_rec.keys())[:-1]
+            ticks.append("Finish")
+            ax.set_xticklabels(ticks, rotation="45")
             plt.title(f"Server send/receive")
             ax.grid()
             ax.legend(["Received Bytes", "Send Bytes"])

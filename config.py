@@ -14,5 +14,5 @@ device = "cpu"
 print(f"Using device: {device}")
 
 SERVER_HOST = ""
-SERVER_PORT = 9995
+SERVER_PORT = 9994
 
