@@ -4,7 +4,7 @@ number,responsible,dataset,clients,c,rounds,datasize (clients),ternary,personali
 3,Fabian,MNIST,3,0.8,25,2000,False,True,False,0.95,0.9324,0.9399,0.9970,False
 4,Louis,MNIST,3,0.8,25,2000,False,True,True,0.96,1.0,1.0,1.0,False
 5,Hela,MNIST,3,0.8,25,2000,True,False,False,,,,,False
-6,Fabian,MNIST,3,0.8,25,2000,True,False,True,,,,,False
+6,Fabian,MNIST,3,0.8,25,2000,True,False,True,0.95,0.9925,1.0,0.9940,False
 7,Louis,MNIST,3,0.8,25,2000,True,True,False,,,,,False
 8,Hela,MNIST,3,0.8,25,2000,True,True,True,,,,,False
 9,Fabian,MNIST,np.nan,np.nan,25,2000,np.nan,np.nan,np.nan,,,,,True
