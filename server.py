@@ -126,6 +126,7 @@ class Server(Thread):
             plt.ylabel("Bytes")
             ticks = list(cumsum_rec.keys())[:-1]
             ticks.append("Finish")
+            ax.set_xticks(np.arange(len(ticks))+1)
             ax.set_xticklabels(ticks, rotation="45")
             plt.title(f"Server send/receive")
             ax.grid()

@@ -14,13 +14,13 @@ def main():
 
     fed_config = {"C": 0.8, # percentage of clients to pick (floored)
                   "K": 3, # clients overall
-                  "R": 3, # rounds of training TODO:CHANGE TO 15
+                  "R": 25, # rounds of training TODO:CHANGE TO 25
                   "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
-                  "data_name": "FashionMNIST",
+                  "data_name": "MNIST",
                   "shards_each": 2,
                   "ternary": False,
                   "personalized": False,

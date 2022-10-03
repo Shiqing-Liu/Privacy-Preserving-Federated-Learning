@@ -212,14 +212,11 @@ class Client(Thread):
             ax2.set_ylabel('Accuracy')
             for i, sig in zip(ax.get_xticks(), self.signals[:-2]):
                 if sig == "Skip":
-                    #i = i + (i * self.epochs)
                     ax2.fill_between([i, i+self.epochs], -1, 2, color="grey", alpha=0.5)
             ax2.set_ylim([-0.05, 1.05])
             ax2.legend(["Accuracy"], loc="center right")
             plt.title(f"{self.name} local performance")
-            fig.show()
             fig.savefig(os.path.join(SAVE_PATH, "local_performance_" + self.name + ".png"))
-        Axes.fill_between(x, y1, y2=0, where=None, interpolate=False, step=None, *, data=None, **kwargs)
         # Save results to file
         with self.lock:
             with open(os.path.join(SAVE_PATH, "configuration.txt"), 'a') as f:
@@ -254,6 +251,7 @@ class Client(Thread):
             ticks.append("Finish")
             ticks[0] = "SetUp"
             print(ticks)
+            ax.set_xticks(np.arange(len(ticks)))
             ax.set_xticklabels(ticks, rotation="45")
             plt.title(f"{self.name} send/receive")
             plt.ylabel("Bytes")
