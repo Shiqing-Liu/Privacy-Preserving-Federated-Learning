@@ -250,7 +250,6 @@ class Client(Thread):
             ticks = list(cumsum_send.keys())[:-1]
             ticks.append("Finish")
             ticks[0] = "SetUp"
-            print(ticks)
             ax.set_xticks(np.arange(len(ticks)))
             ax.set_xticklabels(ticks, rotation="45")
             plt.title(f"{self.name} send/receive")

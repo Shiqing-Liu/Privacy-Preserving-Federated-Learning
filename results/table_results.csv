@@ -1,7 +1,7 @@
 number,responsible,dataset,clients,c,rounds,datasize (clients),ternary,personalized,iid,acc (server),acc (c1),acc (c2),acc (c3),single
-1,Louis,MNIST,3,0.8,25,2000,False,False,False,0.96,0.983,0.9879,0.9714,False
+1,Louis,MNIST,3,0.8,25,2000,False,False,False,0.96,0.9830,0.9879,0.9714,False
 2,Hela,MNIST,3,0.8,25,2000,False,False,True,,,,,False
-3,Fabian,MNIST,3,0.8,25,2000,False,True,False,,,,,False
+3,Fabian,MNIST,3,0.8,25,2000,False,True,False,0.95,0.9324,0.9399,0.9970,False
 4,Louis,MNIST,3,0.8,25,2000,False,True,True,,,,,False
 5,Hela,MNIST,3,0.8,25,2000,True,False,False,,,,,False
 6,Fabian,MNIST,3,0.8,25,2000,True,False,True,,,,,False
