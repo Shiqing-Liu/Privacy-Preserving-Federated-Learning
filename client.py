@@ -159,9 +159,9 @@ class Client(Thread):
                 else:
                     self.send(self.model.state_dict())
                 if len(self.training_acc_loss) == 0:
-                    self.training_acc_loss.append([np.nan, np.nan]*self.epochs)
+                    self.training_acc_loss.append([[np.nan, np.nan]]*self.epochs)
                 else:
-                    self.training_acc_loss.append(self.training_acc_loss[-1][-1]*self.epochs)
+                    self.training_acc_loss.append([self.training_acc_loss[-1][-1]]*self.epochs)
                 self.logger.debug(f"{self.name} --Model--> Server")
             elif signal == "Finish":
                 model = self.receive()
@@ -172,42 +172,42 @@ class Client(Thread):
             self.accs.append(acc)
             self.losses.append(loss)
         self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
+        with self.lock:
+            # Plot performance
+            fig, ax = plt.subplots()
+            ax.plot(list(range(len(self.losses))), self.losses, color='blue')
+            ax.set_xlabel("Global Rounds")
+            ax.set_ylabel('Loss')
+            ax.legend(["Loss"], loc="center left")
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            ax.grid()
 
-        # Plot performance
-        fig, ax = plt.subplots()
-        ax.plot(list(range(len(self.losses))), self.losses, color='blue')
-        ax.set_xlabel("Global Rounds")
-        ax.set_ylabel('Loss')
-        ax.legend(["Loss"], loc="center left")
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.grid()
+            ax2 = ax.twinx()
+            ax2.plot(list(range(len(self.losses))), self.accs, color='orange')
+            ax2.set_ylabel('Accuracy')
+            ax2.set_ylim([-0.05, 1.05])
+            ax2.legend(["Accuracy"], loc="center right")
+            plt.title(f"{self.name} performance")
+            fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
 
-        ax2 = ax.twinx()
-        ax2.plot(list(range(len(self.losses))), self.accs, color='orange')
-        ax2.set_ylabel('Accuracy')
-        ax2.set_ylim([-0.05, 1.05])
-        ax2.legend(["Accuracy"], loc="center right")
-        plt.title(f"{self.name} performance")
-        fig.savefig(os.path.join(SAVE_PATH, "performance_" + self.name + ".png"))
+            # Plot local performance
+            tlosses, taccs = list(zip(*[tu for arr in self.training_acc_loss for tu in arr]))
+            fig, ax = plt.subplots()
+            ax.plot(list(range(len(tlosses))), tlosses, color='blue')
+            ax.set_xlabel("Local Epochs")
+            ax.set_xticklabels(self.signals[:-2], rotation=45)
+            ax.set_ylabel('Loss')
+            ax.legend(["Loss"], loc="center left")
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            ax.grid()
 
-        tlosses, taccs = list(zip(*[tu for arr in self.training_acc_loss for tu in arr]))
-        # Plot performance
-        fig, ax = plt.subplots()
-        ax.plot(list(range(len(tlosses))), tlosses, color='blue')
-        ax.set_xlabel("Local Epochs")
-        ax.set_xticklabels([""] + self.signals[:-2], rotation=45)
-        ax.set_ylabel('Loss')
-        ax.legend(["Loss"], loc="center left")
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax.grid()
-
-        ax2 = ax.twinx()
-        ax2.plot(list(range(len(taccs))), taccs, color='orange')
-        ax2.set_ylabel('Accuracy')
-        ax2.set_ylim([-0.05, 1.05])
-        ax2.legend(["Accuracy"], loc="center right")
-        plt.title(f"{self.name} local performance")
-        fig.savefig(os.path.join(SAVE_PATH, "local_performance_" + self.name + ".png"))
+            ax2 = ax.twinx()
+            ax2.plot(list(range(len(taccs))), taccs, color='orange')
+            ax2.set_ylabel('Accuracy')
+            ax2.set_ylim([-0.05, 1.05])
+            ax2.legend(["Accuracy"], loc="center right")
+            plt.title(f"{self.name} local performance")
+            fig.savefig(os.path.join(SAVE_PATH, "local_performance_" + self.name + ".png"))
 
         # Save results to file
         with self.lock:
@@ -234,17 +234,17 @@ class Client(Thread):
                 cumsum_rec[i] += j
             else:
                 cumsum_rec[i] = j
-
-        # Plot Data
-        fig, ax = plt.subplots()
-        ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
-        ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
-        plt.xlabel("Rounds")
-        plt.title(f"{self.name} send/receive")
-        plt.ylabel("Bytesleistung")
-        ax.grid()
-        ax.legend(["Received Bytes", "Send Bytes"])
-        fig.savefig(os.path.join(SAVE_PATH, "send_and_transmit_" + self.name + ".png"))
+        with self.lock:
+            # Plot Data
+            fig, ax = plt.subplots()
+            ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
+            ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
+            plt.xlabel("Rounds")
+            plt.title(f"{self.name} send/receive")
+            plt.ylabel("Bytesleistung")
+            ax.grid()
+            ax.legend(["Received Bytes", "Send Bytes"])
+            fig.savefig(os.path.join(SAVE_PATH, "send_and_transmit_" + self.name + ".png"))
 
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, ternary, personalized):
         """

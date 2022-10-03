@@ -85,24 +85,24 @@ class Server(Thread):
         self.disconnect_clients()
         self.logger.info("Exiting.")
         self.logger.debug(f"Received bytes = {self.received_data}; transmitted bytes = {self.received_data}")
+        with self.lock:
+            # Plot performance
+            fig, ax = plt.subplots()
+            ax.plot(list(range(len(self.losses))), self.losses, color='blue')
+            ax.set_xlabel("Global Rounds")
+            ax.set_ylabel('Loss')
+            ax.legend(["Loss"], loc="center left")
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-        # Plot performance
-        fig, ax = plt.subplots()
-        ax.plot(list(range(len(self.losses))), self.losses, color='blue')
-        ax.set_xlabel("Global Rounds")
-        ax.set_ylabel('Loss')
-        ax.legend(["Loss"], loc="center left")
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            ax2 = ax.twinx()
+            ax2.plot(list(range(len(self.accs))), self.accs, color='orange')
+            ax2.set_ylabel('Accuracy')
+            ax2.set_ylim([-0.05, 1.05])
+            ax2.legend(["Accuracy"], loc="center right")
+            ax.grid()
 
-        ax2 = ax.twinx()
-        ax2.plot(list(range(len(self.accs))), self.accs, color='orange')
-        ax2.set_ylabel('Accuracy')
-        ax2.set_ylim([-0.05, 1.05])
-        ax2.legend(["Accuracy"], loc="center right")
-        ax.grid()
-
-        plt.title(f"Server Performance")
-        fig.savefig(os.path.join(SAVE_PATH, "performance_server.png"))
+            plt.title(f"Server Performance")
+            fig.savefig(os.path.join(SAVE_PATH, "performance_server.png"))
 
         cumsum_send = {}
         for (i, j) in self.send_data:
@@ -116,17 +116,17 @@ class Server(Thread):
                 cumsum_rec[i] += j
             else:
                 cumsum_rec[i] = j
-
-        # Plot Data
-        fig, ax = plt.subplots()
-        ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
-        ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
-        plt.xlabel("Rounds")
-        plt.ylabel("Bytesleistung")
-        plt.title(f"Server send/receive")
-        ax.grid()
-        ax.legend(["Received Bytes", "Send Bytes"])
-        fig.savefig(os.path.join(SAVE_PATH, "received_and_transmitted_server.png"))
+        with self.lock:
+            # Plot Data
+            fig, ax = plt.subplots()
+            ax.plot(list(cumsum_rec.keys()), np.cumsum((list(cumsum_rec.values()))), "--")
+            ax.plot(list(cumsum_send.keys()), np.cumsum((list(cumsum_send.values()))), "-.")
+            plt.xlabel("Rounds")
+            plt.ylabel("Bytesleistung")
+            plt.title(f"Server send/receive")
+            ax.grid()
+            ax.legend(["Received Bytes", "Send Bytes"])
+            fig.savefig(os.path.join(SAVE_PATH, "received_and_transmitted_server.png"))
 
     def connect_clients(self):
         '''
