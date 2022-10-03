@@ -24,7 +24,7 @@ def main():
                   "shards_each": 2,
                   "ternary": False,
                   "personalized": False,
-                  "iid": True
+                  "iid": False
                   }
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
