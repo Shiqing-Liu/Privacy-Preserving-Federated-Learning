@@ -88,14 +88,14 @@ class Server(Thread):
         with self.lock:
             # Plot performance
             fig, ax = plt.subplots()
-            ax.plot(list(range(len(self.losses))), self.losses, color='blue')
+            ax.plot(list(range(len(self.losses))), self.losses, color='blue', marker="o", markersize=3)
             ax.set_xlabel("Global Rounds")
             ax.set_ylabel('Loss')
             ax.legend(["Loss"], loc="center left")
             ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
             ax2 = ax.twinx()
-            ax2.plot(list(range(len(self.accs))), self.accs, color='orange')
+            ax2.plot(list(range(len(self.accs))), self.accs, color='orange', marker="o", markersize=3)
             ax2.set_ylabel('Accuracy')
             ax2.set_ylim([-0.05, 1.05])
             ax2.legend(["Accuracy"], loc="center right")

@@ -193,22 +193,29 @@ class Client(Thread):
             # Plot local performance
             tlosses, taccs = list(zip(*[tu for arr in self.training_acc_loss for tu in arr]))
             fig, ax = plt.subplots()
-            ax.plot(list(range(len(tlosses))), tlosses, color='blue')
+            ax.plot(list(range(len(tlosses))), tlosses, color='blue', marker="o", markersize=3)
             ax.set_xlabel("Local Epochs")
             ax.set_xticklabels(self.signals[:-2], rotation=45)
             ax.set_ylabel('Loss')
             ax.legend(["Loss"], loc="center left")
-            ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            #ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+            ax.set_xticks((np.arange(len(self.signals[:-2]))*self.epochs)-0.5)
+            ax.set_xticklabels(self.signals[:-2])
             ax.grid()
 
             ax2 = ax.twinx()
-            ax2.plot(list(range(len(taccs))), taccs, color='orange')
+            ax2.plot(list(range(len(taccs))), taccs, color='orange', marker="o", markersize=3)
             ax2.set_ylabel('Accuracy')
+            for i, sig in zip(ax.get_xticks(), self.signals[:-2]):
+                if sig == "Skip":
+                    #i = i + (i * self.epochs)
+                    ax2.fill_between([i, i+self.epochs], -1, 2, color="grey", alpha=0.5)
             ax2.set_ylim([-0.05, 1.05])
             ax2.legend(["Accuracy"], loc="center right")
             plt.title(f"{self.name} local performance")
+            fig.show()
             fig.savefig(os.path.join(SAVE_PATH, "local_performance_" + self.name + ".png"))
-
+        Axes.fill_between(x, y1, y2=0, where=None, interpolate=False, step=None, *, data=None, **kwargs)
         # Save results to file
         with self.lock:
             with open(os.path.join(SAVE_PATH, "configuration.txt"), 'a') as f:
