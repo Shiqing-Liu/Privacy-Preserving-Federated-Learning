@@ -14,22 +14,26 @@ def main():
 
     fed_config = {"C": 0.8, # percentage of clients to pick (floored)
                   "K": 3, # clients overall
-                  "R": 5, # rounds of training TODO:CHANGE TO 15
+                  "R": 15, # rounds of training TODO:CHANGE TO 15
                   "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,
                   "criterion": nn.CrossEntropyLoss(),
                   "lr": 0.01,
-                  "data_name": "MNIST",
+                  "data_name": "FashionMNIST",
                   "shards_each": 2,
-                  "ternary": True,
-                  "personalized": True,
-                  "iid": False
+                  "ternary": False,
+                  "personalized": False,
+                  "iid": True
                   }
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
         model = Quantized_CNN(Net_2_Q(), fed_config)
     elif fed_config["data_name"] == "MNIST":
+        model = Net_2()
+    elif fed_config["ternary"] and fed_config["data_name"] == "FashionMNIST":
+        model = Quantized_CNN(Net_2_Q(), fed_config)
+    elif fed_config["data_name"] == "FashionMNIST":
         model = Net_2()
     elif fed_config["ternary"] and fed_config["data_name"] == "CIFAR100":
         model = Quantized_CNN(Net_4(100), fed_config)
@@ -68,6 +72,7 @@ def main():
             dur = time.time()-start
             f.write(f"Duration: {int(dur//60)} minutes {round(dur%60)} seconds\n")
     print("Finished!")
+
 
 if __name__ == '__main__':
     main()
