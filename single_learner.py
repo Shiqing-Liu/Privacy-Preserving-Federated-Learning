@@ -16,16 +16,16 @@ TIME_STAMP = f"{time.localtime().tm_year}.{time.localtime().tm_mon}.{time.localt
 SAVE_PATH = os.path.join(os.getcwd(), "results", "single_learner_" + TIME_STAMP)
 os.mkdir(SAVE_PATH)
 
-DATA_NAME = "CIFAR10"
-EPOCHS = 100
+DATA_NAME = "FashionMNIST"
+EPOCHS = 25
 BATCH_SIZE = 64
 LR = 0.01
-NUM_TRAIN_DATA = 10000
+NUM_TRAIN_DATA = 2000
 NUM_TEST_DATA = 1000
 start = time.time()
 
 # Get the correct model
-if DATA_NAME == "MNIST":
+if DATA_NAME == "MNIST" or DATA_NAME == "FashionMNIST":
     model = Net_2()
 elif DATA_NAME == "CIFAR100":
     model = Net_4(100)
