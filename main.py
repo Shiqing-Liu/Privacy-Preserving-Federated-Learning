@@ -25,6 +25,7 @@ def main():
                   "ternary": True,
                   "personalized": True,
                   "iid": True
+
                   }
 
     if fed_config["ternary"]  and fed_config["data_name"] == "MNIST":
