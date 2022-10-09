@@ -1,0 +1,30 @@
+The following training was conducted:
+
+C: 0.8
+K: 1
+R: 5
+E: 3
+B: 64
+optimizer: <class 'torch.optim.adam.Adam'>
+criterion: CrossEntropyLoss()
+lr: 0.01
+data_name: MNIST
+shards_each: 2
+ternary: False
+personalized: True
+iid: True
+model: <class 'models.Net_2'>
+LESS_DATA: 1000
+SERVER_TEST_SIZE: 1000
+SERVER_TRAIN_SIZE: 100
+
+
+Information from Server:
+
+Accuracy: [0.95, 0.93, 0.96, 0.97, 0.98]
+Loss: [0.1219153106212616, 0.14465796574950218, 0.14076875522732735, 0.21391061134636402, 0.11992783471941948]
+Received data: [(1, 23), (2, 117919), (3, 117919), (4, 117919), (5, 117919), (6, 117919)]
+Send data: [(1, 20), (1, 8151), (1, 610), (1, 119468), (2, 21), (2, 117919), (3, 21), (3, 117919), (4, 21), (4, 117919), (5, 21), (5, 117919), (6, 21), (6, 117919), (6, 21), (6, 117919)]
+
+
+Duration: 5 minutes 7 seconds

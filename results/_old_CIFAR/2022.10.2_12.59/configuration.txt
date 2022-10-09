@@ -1,0 +1,21 @@
+The following training was conducted:
+
+C: 0.8
+K: 3
+R: 5
+E: 3
+B: 64
+optimizer: <class 'torch.optim.adam.Adam'>
+criterion: CrossEntropyLoss()
+lr: 0.01
+data_name: MNIST
+shards_each: 2
+ternary: True
+personalized: False
+iid: False
+model: <class 'models.Net_2_Q'>
+LESS_DATA: 1000
+SERVER_TEST_SIZE: 1000
+SERVER_TRAIN_SIZE: 100
+
+

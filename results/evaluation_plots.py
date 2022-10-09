@@ -60,7 +60,7 @@ print(f"Found {count} of {len(data)} training results!")
 def plot1():
     color = {True: "orange", False: "blue", np.nan:"black"}
     color_num = {1: "yellow", 2: "orange", 3: "red", 4: "purple", 5: "blue", 6: "lightblue", 7:"lightgreen", 8: "darkgreen", 9: "black"}
-    color_iid = {1: "black", 2: "black", 3: "orange", 4: "white", 5: "blue", 6: "blue", 7:"green", 8: "green", 9: "red"}
+    color_iid = {1: "black", 2: "black", 3: "orange", 4: "orange", 5: "blue", 6: "blue", 7:"green", 8: "green", 9: "red"}
     line = {True: "-.", False: "-", np.nan:"-"}
     marker = {True: "x", False: "", np.nan:""}
     fig, ax = plt.subplots(figsize=(15, 10))
@@ -76,7 +76,7 @@ def plot1():
     fig.show()
 
 def plot1_clients(c_num=1):
-    color_iid = {1: "black", 2: "black", 3: "orange", 4: "white", 5: "blue", 6: "blue", 7:"green", 8: "green", 9: "red"}
+    color_iid = {1: "black", 2: "black", 3: "orange", 4: "orange", 5: "blue", 6: "blue", 7:"green", 8: "green", 9: "red"}
     line = {True: "-.", False: "-", np.nan:"-"}
     fig, ax = plt.subplots(figsize=(15, 10))
     for num, value in data.items():
@@ -94,7 +94,7 @@ def plot1_clients(c_num=1):
     fig.show()
 
 def plot2():
-    color_iid = {1: "black", 2: "black", 3: "orange", 4: "white", 5: "blue", 6: "blue", 7:"green", 8: "green", 9: "red"}
+    color_iid = {1: "black", 2: "black", 3: "orange", 4: "orange", 5: "blue", 6: "blue", 7:"green", 8: "green", 9: "red"}
     line = {True: "-.", False: "-", np.nan:"-"}
     fig, ax = plt.subplots(figsize=(15, 10))
     for num, value in data.items():
