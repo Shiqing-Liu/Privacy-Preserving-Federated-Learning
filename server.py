@@ -219,8 +219,9 @@ class Server(Thread):
         # copy and quantizise for strategy 1
         backup_w = copy.deepcopy(w_avg)
 
-        ter_avg = self.quantize_server(backup_w)
-        w,_ = self.choose_model(w_avg,ter_avg)
+        ter_avg = self.quantize_server(w_avg)
+
+        w,_ = self.choose_model(backup_w,ter_avg)
         self.model.load_state_dict(w)
 
     def quantize_server(self, model_dict):
@@ -233,9 +234,17 @@ class Server(Thread):
                 w_p = tmp2 / tmp1
                 a = (kernel > delta).float()
                 b = (kernel < -delta).float()
-                kernel = w_p * a - w_p * b
+                kernel = (a - b).type(torch.int8)
                 model_dict[key] = kernel
         return model_dict
+
+
+    def turn_into_int_if_tern(self, state_dict, is_ternary = False):
+        if is_ternary:
+            for key, kernel in state_dict.items():
+                if 'ternary' and 'conv' in key:
+                    state_dict[key] = kernel.type(torch.int8)
+        return state_dict
 
     def choose_model(self, f_dict, ter_dict):
         # create models based on both full and ternary weights
@@ -250,7 +259,7 @@ class Server(Thread):
         print('F: %.3f' % acc_1, 'TF: %.3f' % acc_2)
         # If the ter model loses more than 3 percent accuracy, sent full model instead
         flag = False
-        if np.abs(acc_1 - acc_2) < 0.03:
+        if np.abs(acc_1 - acc_2) < 0.05:
             self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 1")
             flag = True
             return ter_dict, flag
@@ -426,10 +435,11 @@ class Server(Thread):
         self.send(conn, addr, signal)
         self.logger.debug(f"Server --{signal}--> {name}")
         if signal == "Update":
-            self.send(conn, addr, self.model.state_dict())
+            msg = self.turn_into_int_if_tern(copy.deepcopy(self.model.state_dict()),self.ternary) if self.cur_round > 2 else self.model.state_dict()
+            self.send(conn, addr, msg)
             self.logger.debug(f"Server --Model--> {name}")
         elif signal == "Finish":
-            self.send(conn, addr, self.model.state_dict())
+            self.send(conn, addr, self.turn_into_int_if_tern(self.model.state_dict(),self.ternary))
             self.logger.debug(f"Server --Model--> {name}")
             return
         data = self.receive(conn, addr)

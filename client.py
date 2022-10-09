@@ -326,7 +326,7 @@ class Client(Thread):
                 w_p = tmp2 / tmp1
                 a = (kernel > delta).float()
                 b = (kernel < -delta).float()
-                kernel = w_p * a - w_p * b
+                kernel = (a - b).to(torch.int8)
                 model_dict[key] = kernel
         return model_dict
 
@@ -342,7 +342,7 @@ class Client(Thread):
         print('F: %.3f' % acc_1, 'TF: %.3f' % acc_2)
         # If the ter model loses more than 3 percent accuracy, sent full model instead
         flag = False
-        if np.abs(acc_1 - acc_2) < 0.03:
+        if np.abs(acc_1 - acc_2) < 0.05:
             self.logger.info(f"Accuracy differnce: {np.abs(acc_1 - acc_2)}, Choosing Strategy 1")
             flag = True
             return ter_dict, flag
