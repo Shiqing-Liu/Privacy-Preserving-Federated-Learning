@@ -1,4 +1,5 @@
 import os, time, torch
+import numpy as np
 TIME_STAMP = f"{time.localtime().tm_year}.{time.localtime().tm_mon}.{time.localtime().tm_mday}_{time.localtime().tm_hour}.{time.localtime().tm_min}"
 SAVE_PATH = os.path.join(os.getcwd(), "results", TIME_STAMP)
 if not os.path.isdir(SAVE_PATH):
@@ -13,6 +14,6 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 device = "cpu"
 print(f"Using device: {device}")
 
-SERVER_HOST = "localhost"
-SERVER_PORT = 9995
+SERVER_HOST = ""
+SERVER_PORT = 9900 + np.random.randint(0, 100)
 
