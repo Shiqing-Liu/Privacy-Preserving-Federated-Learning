@@ -31,7 +31,7 @@ class Server(Thread):
         self.local_epochs = fed_config["E"]
         self.batch_size = fed_config["B"]
         self.ternary = fed_config["ternary"]
-
+        self.compress = False
         self.optimizer = fed_config["optimizer"]
         self.criterion = fed_config["criterion"]
         self.learning_rate = fed_config["lr"]
@@ -221,7 +221,7 @@ class Server(Thread):
 
         ter_avg = self.quantize_server(w_avg)
 
-        w,_ = self.choose_model(backup_w,ter_avg)
+        w, self.compress = self.choose_model(backup_w,ter_avg)
         self.model.load_state_dict(w)
 
     def quantize_server(self, model_dict):
@@ -240,7 +240,7 @@ class Server(Thread):
 
 
     def turn_into_int_if_tern(self, state_dict, is_ternary = False):
-        if is_ternary:
+        if is_ternary and self.compress:
             for key, kernel in state_dict.items():
                 if 'ternary' and 'conv' in key:
                     state_dict[key] = kernel.type(torch.int8)

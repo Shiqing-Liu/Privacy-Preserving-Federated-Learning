@@ -12,9 +12,9 @@ from threading import Lock
 
 def main():
 
-    fed_config = {"C": 0.8, # percentage of clients to pick (floored)
+    fed_config = {"C": 1, # percentage of clients to pick (floored)
                   "K": 3, # clients overall
-                  "R": 10, # rounds of training TODO:CHANGE TO 25
+                  "R": 5, # rounds of training TODO:CHANGE TO 25
                   "E": 3,
                   "B": 64,
                   "optimizer": torch.optim.Adam,

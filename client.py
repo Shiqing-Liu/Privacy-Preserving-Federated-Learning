@@ -37,6 +37,7 @@ class Client(Thread):
         self.personalized_weight = []
         self.lock = lock
         self.round = 0
+        self.compress = False
 
     def run(self):
         '''
@@ -88,7 +89,7 @@ class Client(Thread):
 
                 if not self.personalized:
                     self.update()
-                    self.send(self.model.state_dict())
+                    self.send(self.turn_into_int_if_tern(self.model.state_dict(), self.ternary))
 
                 else:
                     if len(self.personalized_weight) == 0:         #first time the client recieves data from the server
@@ -117,7 +118,7 @@ class Client(Thread):
                     self.model.state_dict().update(last_layer_to_be_sent)
 
                     #send weights to the server
-                    self.send(self.model.state_dict())
+                    self.send(self.turn_into_int_if_tern(self.model.state_dict(), self.ternary))
 
                     # personalized weights get their values again
                     #last_weights = self.personalized_weight[-1]
@@ -129,7 +130,8 @@ class Client(Thread):
                 if self.personalized:
                     if len(self.signals) > 1:
                         if (self.signals[-2] == "Update") or (self.signals[-2] == "Skip"):
-                            self.send(self.model.state_dict())
+                            self.send(self.turn_into_int_if_tern(self.model.state_dict(), self.ternary))
+
                     else:
                         # list of keys to access the weights of last layer
                         list_keys_weights = list(self.model.state_dict().keys())
@@ -152,7 +154,7 @@ class Client(Thread):
                         self.model.state_dict().update(last_layer_to_be_sent)
 
                         # send weights to the server
-                        self.send(self.model.state_dict())
+                        self.send(self.turn_into_int_if_tern(self.model.state_dict(), self.ternary))
 
                         # personalized weights get their values again
                         # last_weights = self.personalized_weight[-1]
@@ -259,6 +261,15 @@ class Client(Thread):
             ax.legend(["Received Bytes", "Send Bytes"])
             fig.savefig(os.path.join(SAVE_PATH, "send_and_transmit_" + self.name + ".png"))
 
+
+    def turn_into_int_if_tern(self, state_dict, is_ternary=False):
+        if is_ternary and self.compress:
+            for key, kernel in state_dict.items():
+                if 'ternary' and 'conv' in key:
+                    state_dict[key] = kernel.type(torch.int8)
+        return state_dict
+
+
     def set_params(self, epochs, batch_size, optimizer, learning_rate, criterion, ternary, personalized):
         """
         Set parameters of the client for the training rounds. Must be called at least once after creation of a
@@ -309,8 +320,8 @@ class Client(Thread):
         if self.ternary:
             backup_w = self.model.state_dict().copy()
             ter_avg = self.quantize_client(backup_w)
-            w, flag = self.choose_model(self.model.state_dict(), ter_avg)
-            self.strategy_history.append("Strategy 1") if flag else self.strategy_history.append("Strategy 2")
+            w, self.compress = self.choose_model(self.model.state_dict(), ter_avg)
+            self.strategy_history.append("Strategy 1") if self.compress else self.strategy_history.append("Strategy 2")
             self.model.load_state_dict(w)
         self.training_acc_loss.append(temp_performance)
 
