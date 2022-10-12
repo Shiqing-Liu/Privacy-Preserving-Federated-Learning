@@ -180,4 +180,4 @@ def table1():
     df[">95"] = x95
     return df
 
-plot3()
+plot1()
