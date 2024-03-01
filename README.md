@@ -1,4 +1,12 @@
-# Federated Learning resources
+# Privacy-Preserving Federated Learning
+
+This repository contains code for the ISY project 'Privacy-Preserving Federated Learning', which won **the Best Project Award**🥇 at the 2022 Congress of the Master's degree program in Intelligent Systems.
+
+> Team members: Hela Jemli, Fabian Luca Reichwald, and Louis Scheu
+>
+> Supervised by: Shiqing Liu, Yuping Yan, and Yaochu Jin
+
+More info: https://blogs.uni-bielefeld.de/blog/techfak/entry/isy_kongress_k%C3%BCrt_bestes_studi1
 
 ## survey
 
